@@ -3,7 +3,7 @@ import torch
 import yaml
 import torch.nn as nn
 import parser
-from models.model import two_view_net, three_view_net
+from models.model import two_view_net
 import importlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -116,27 +116,10 @@ def check_box(images,boxes):
 #  Load model for resume
 #---------------------------
 def load_network(opt):
-    # module = importlib.import_module("checkpoints."+name+".model")
-
-    # Load config
-    # dirname = os.path.join('./checkpoints',name)
-    # last_model_name = os.path.basename(get_model_list(dirname, 'net'))
     save_filename = opt.checkpoint
-
     if opt.views == 2:
         # model = getattr(module, "two_view_net")(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block)
         model = two_view_net(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block,deit=opt.deit)
-    elif opt.views == 3:
-        model = three_view_net(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block,deit=opt.deit)
-
-    # if 'use_vgg16' in config:
-    #     opt.use_vgg16 = config['use_vgg16']
-    #     if opt.views == 2:
-    #         model = two_view_net(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share, VGG16 = opt.use_vgg16)
-    #     elif opt.views == 3:
-    #         model = three_view_net(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share, VGG16 = opt.use_vgg16)
-
-    # save_path = os.path.join('./checkpoints',name,save_filename)
     print('Load the model from %s'%save_filename)
     network = model
     network.load_state_dict(torch.load(save_filename))

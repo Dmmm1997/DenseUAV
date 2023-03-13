@@ -3,52 +3,72 @@ import torch
 import yaml
 import torch.nn as nn
 import parser
-# from model import ft_net, two_view_net, three_view_net
 import importlib
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-from shutil import copyfile,copytree,rmtree
+from shutil import copyfile, copytree, rmtree
+import logging
+from models.taskflow import make_model
+from thop import profile, clever_format
 
-def copy_file_or_tree(path,target_dir):
-    target_path = os.path.join(target_dir,path)
+
+def get_logger(filename, verbosity=1, name=None):
+    level_dict = {0: logging.DEBUG, 1: logging.INFO, 2: logging.WARNING}
+    formatter = logging.Formatter(
+        "[%(asctime)s][%(levelname)s] %(message)s"
+    )
+    logger = logging.getLogger(name)
+    logger.setLevel(level_dict[verbosity])
+
+    fh = logging.FileHandler(filename, "w")
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+    sh = logging.StreamHandler()
+    sh.setFormatter(formatter)
+    logger.addHandler(sh)
+
+    return logger
+
+
+def copy_file_or_tree(path, target_dir):
+    target_path = os.path.join(target_dir, path)
     if os.path.isdir(path):
         if os.path.exists(target_path):
             rmtree(target_path)
-        copytree(path,target_path)
+        copytree(path, target_path)
     elif os.path.isfile(path):
-         copyfile(path,target_path)
+        copyfile(path, target_path)
+
 
 def copyfiles2checkpoints(opt):
-    dir_name = os.path.join('/home/dmmm/PycharmProject/DenseCV/demo/checkpoints', opt.name)
-    if not os.path.exists(dir_name):
+    dir_name = os.path.join('checkpoints', opt.name)
+    if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
     # record every run
-    copy_file_or_tree('train.py',dir_name)
-    copy_file_or_tree('test_server.py',dir_name)
-    copy_file_or_tree('evaluate_gpu.py',dir_name)
-    copy_file_or_tree('datasets',dir_name)
-    copy_file_or_tree('losses',dir_name)
-    copy_file_or_tree('models',dir_name)
-    copy_file_or_tree('optimizers',dir_name)
-    copy_file_or_tree('tool',dir_name)
-    copy_file_or_tree('heatmap.py',dir_name)
-    copy_file_or_tree('evaluateDistance.py',dir_name)
-    copy_file_or_tree('forwardAllSatelliteHub.py',dir_name)
-    copy_file_or_tree('demo_custom_visualization.py',dir_name)
-    copy_file_or_tree('demo_custom.py',dir_name)
-    copy_file_or_tree('demo.py',dir_name)
-    copy_file_or_tree('inference(globalsearch).py',dir_name)
-    copy_file_or_tree('Inference(neiborsearch).py',dir_name)
+    copy_file_or_tree('train.py', dir_name)
+    copy_file_or_tree('test.py', dir_name)
+    copy_file_or_tree('test_server.py', dir_name)
+    copy_file_or_tree('evaluate_gpu.py', dir_name)
+    copy_file_or_tree('evaluateDistance.py', dir_name)
+    copy_file_or_tree('datasets', dir_name)
+    copy_file_or_tree('losses', dir_name)
+    copy_file_or_tree('models', dir_name)
+    copy_file_or_tree('optimizers', dir_name)
+    copy_file_or_tree('tool', dir_name)
+    copy_file_or_tree('train_test_local.sh', dir_name)
+    copy_file_or_tree('heatmap.py', dir_name)
 
     # save opts
     with open('%s/opts.yaml' % dir_name, 'w') as fp:
         yaml.dump(vars(opt), fp, default_flow_style=False)
 
+
 def make_weights_for_balanced_classes(images, nclasses):
     count = [0] * nclasses
     for item in images:
-        count[item[1]] += 1 # count the image number in every class
+        count[item[1]] += 1  # count the image number in every class
     weight_per_class = [0.] * nclasses
     N = float(sum(count))
     for i in range(nclasses):
@@ -59,9 +79,11 @@ def make_weights_for_balanced_classes(images, nclasses):
     return weight
 
 # Get model list for resume
+
+
 def get_model_list(dirname, key):
     if os.path.exists(dirname) is False:
-        print('no dir: %s'%dirname)
+        print('no dir: %s' % dirname)
         return None
     gen_models = [os.path.join(dirname, f) for f in os.listdir(dirname) if
                   os.path.isfile(os.path.join(dirname, f)) and key in f and ".pth" in f]
@@ -73,15 +95,17 @@ def get_model_list(dirname, key):
 
 ######################################################################
 # Save model
-#---------------------------
+# ---------------------------
+
+
 def save_network(network, dirname, epoch_label):
     if not os.path.isdir('./checkpoints/'+dirname):
         os.mkdir('./checkpoints/'+dirname)
     if isinstance(epoch_label, int):
-        save_filename = 'net_%03d.pth'% epoch_label
+        save_filename = 'net_%03d.pth' % epoch_label
     else:
-        save_filename = 'net_%s.pth'% epoch_label
-    save_path = os.path.join('./checkpoints',dirname,save_filename)
+        save_filename = 'net_%s.pth' % epoch_label
+    save_path = os.path.join('./checkpoints', dirname, save_filename)
     torch.save(network.cpu().state_dict(), save_path)
     if torch.cuda.is_available:
         network.cuda()
@@ -103,12 +127,12 @@ class UnNormalize(object):
         return tensor
 
 
-def check_box(images,boxes):
+def check_box(images, boxes):
     # Unorm = UnNormalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     # images = Unorm(images)*255
-    images = images.permute(0,2,3,1).cpu().detach().numpy()
+    images = images.permute(0, 2, 3, 1).cpu().detach().numpy()
     boxes = (boxes.cpu().detach().numpy()/16*255).astype(np.int)
-    for img,box in zip(images,boxes):
+    for img, box in zip(images, boxes):
         fig = plt.figure()
         ax = fig.add_subplot(111)
         plt.imshow(img)
@@ -117,50 +141,22 @@ def check_box(images,boxes):
         plt.show()
 
 
-
 ######################################################################
 #  Load model for resume
-#---------------------------
-def load_network(name, opt):
-    module = importlib.import_module("checkpoints."+name+".models.model")
-
-    # Load config
-    # last_model_name = os.path.basename(get_model_list(dirname, 'net'))
-    last_model_name = opt.checkpoint
-    epoch = last_model_name.split('_')[1]
-    epoch = epoch.split('.')[0]
-    if not epoch=='last':
-       epoch = int(epoch)
-
-
-    if opt.views == 2:
-        model = getattr(module, "two_view_net")(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block,deit=opt.deit)
-    elif opt.views == 3:
-        model = getattr(module, "three_view_net")(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block)
-
-    # if 'use_vgg16' in config:
-    #     opt.use_vgg16 = config['use_vgg16']
-    #     if opt.views == 2:
-    #         model = two_view_net(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share, VGG16 = opt.use_vgg16)
-    #     elif opt.views == 3:
-    #         model = three_view_net(opt.nclasses, opt.droprate, stride = opt.stride, pool = opt.pool, share_weight = opt.share, VGG16 = opt.use_vgg16)
-
-
-    # load model
-    if isinstance(epoch, int):
-        save_filename = 'net_%03d.pth'% epoch
-    else:
-        save_filename = 'net_%s.pth'% epoch
-
-    save_path = os.path.join('./checkpoints',name,save_filename)
-    print('Load the model from %s'%save_path)
+# ---------------------------
+def load_network(opt):
+    save_filename = opt.checkpoint
+    model = make_model(opt)
+    print('Load the model from %s' % save_filename)
     network = model
-    network.load_state_dict(torch.load(save_path))
-    return network, opt, epoch
+    network.load_state_dict(torch.load(save_filename))
+    return network
+
 
 def toogle_grad(model, requires_grad):
     for p in model.parameters():
         p.requires_grad_(requires_grad)
+
 
 def update_average(model_tgt, model_src, beta):
     toogle_grad(model_src, False)
@@ -175,3 +171,27 @@ def update_average(model_tgt, model_src, beta):
 
     toogle_grad(model_src, True)
 
+
+def get_preds(outputs, outputs2):
+    if isinstance(outputs, list):
+        preds = []
+        preds2 = []
+        for out, out2 in zip(outputs, outputs2):
+            preds.append(torch.max(out.data, 1)[1])
+            preds2.append(torch.max(out2.data, 1)[1])
+    else:
+        _, preds = torch.max(outputs.data, 1)
+        _, preds2 = torch.max(outputs2.data, 1)
+    return preds, preds2
+
+
+def calc_flops_params(model,
+                      input_size_drone,
+                      input_size_satellite,
+                      ):
+    inputs_drone = torch.randn(input_size_drone).cuda()
+    inputs_satellite = torch.randn(input_size_satellite).cuda()
+    total_ops, total_params = profile(
+        model, (inputs_drone, inputs_satellite,), verbose=False)
+    macs, params = clever_format([total_ops, total_params], "%.3f")
+    return macs, params

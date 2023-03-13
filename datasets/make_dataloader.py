@@ -6,10 +6,6 @@ import torch
 from .queryDataset import RotateAndCrop,RandomCrop
 
 def make_dataset(opt):
-    ######################################################################
-    # Load Data
-    # ---------
-    #
     transform_train_list = []
     if opt.rotate:
         transform_train_list.append(RotateAndCrop())
@@ -58,31 +54,8 @@ def make_dataset(opt):
         'val': transforms.Compose(transform_val_list),
         'satellite': transforms.Compose(transform_satellite_list)}
 
-    train_all = ''
-    if opt.train_all:
-        train_all = '_all'
-
-    # image_datasets = {}
-    # image_datasets['satellite'] = datasets.ImageFolder(os.path.join(data_dir, 'satellite'),
-    #                                                    data_transforms['satellite'])
-    # image_datasets['street'] = datasets.ImageFolder(os.path.join(data_dir, 'street'),
-    #                                                 data_transforms['train'])
-    # image_datasets['drone'] = datasets.ImageFolder(os.path.join(data_dir, 'drone'),
-    #                                                data_transforms['train'])
-    # image_datasets['google'] = datasets.ImageFolder(os.path.join(data_dir, 'google'),
-    #                                                 data_transforms['train'])
-    #
-    # dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
-    #                                               shuffle=True, num_workers=opt.num_worker, pin_memory=True)
-    #                # 8 workers may work faster
-    #                for x in ['satellite', 'street', 'drone', 'google']}
-    # dataset_sizes = {x: len(image_datasets[x]) for x in ['satellite', 'drone']}
-    # class_names = image_datasets['street'].classes
-    # print(dataset_sizes)
-    # return dataloaders,class_names,dataset_sizes
 
     # custom Dataset
-
     image_datasets = Dataloader_University(opt.data_dir,transforms=data_transforms)
     samper = Sampler_University(image_datasets,batchsize=opt.batchsize,sample_num=opt.sample_num)
     dataloaders =torch.utils.data.DataLoader(image_datasets, batch_size=opt.batchsize,sampler=samper,num_workers=opt.num_worker, pin_memory=True,collate_fn=train_collate_fn)

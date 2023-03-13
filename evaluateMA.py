@@ -17,8 +17,6 @@ parser = argparse.ArgumentParser(description='Demo')
 # parser.add_argument('--query_index', default=10, type=int, help='test_image_index')
 parser.add_argument(
     '--root_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/', type=str, help='./test_data')
-parser.add_argument('--K', default=[1, 3, 5, 10], type=str, help='./test_data')
-parser.add_argument('--M', default=5e3, type=str, help='./test_data')
 parser.add_argument('--mode', default="1", type=str,
                     help='1:drone->satellite 2:satellite->drone')
 opts = parser.parse_args()
@@ -110,28 +108,6 @@ def getLatitudeAndLongitude(imgPath):
     return posInfo
 
 
-def euclideanDistance(query, gallery):
-    query = np.array(query, dtype=np.float32)
-    gallery = np.array(gallery, dtype=np.float32)
-    A = gallery - query
-    A_T = A.transpose()
-    distance = np.matmul(A, A_T)
-    mask = np.eye(distance.shape[0], dtype=np.bool8)
-    distance = distance[mask]
-    distance = np.sqrt(distance.reshape(-1))
-    return distance
-
-
-def evaluateSingle(distance, K):
-    # maxDistance = max(distance) + 1e-14
-    # weight = np.ones(K) - np.log(range(1, K + 1, 1)) / np.log(opts.M * K)
-    weight = np.ones(K) - np.array(range(0, K, 1))/K
-    # m1 = distance / maxDistance
-    m2 = 1 / np.exp(distance*opts.M)
-    m3 = m2 * weight
-    result = np.sum(m3) / np.sum(weight)
-    return result
-
 
 def latlog2meter(lata, loga, latb, logb):
     # log 纬度 lat 经度 
@@ -149,19 +125,6 @@ def latlog2meter(lata, loga, latb, logb):
     distance = EARTH_RADIUS * dis * 1000
     return distance
 
-
-def evaluate_SDM(indexOfTopK, queryIndex, K):
-    query_path, _ = image_datasets[query_name].imgs[queryIndex]
-    galleryTopKPath = [image_datasets[gallery_name].imgs[i][0]
-                       for i in indexOfTopK[:K]]
-    # get position information including latitude and longitude
-    queryPosInfo = getLatitudeAndLongitude(query_path)
-    galleryTopKPosInfo = getLatitudeAndLongitude(galleryTopKPath)
-    # compute Euclidean distance of query and gallery
-    distance = euclideanDistance(queryPosInfo, galleryTopKPosInfo)
-    # compute single query evaluate result
-    P = evaluateSingle(distance, K)
-    return P
 
 
 def evaluate_MA(indexOfTop1, queryIndex):
@@ -182,17 +145,6 @@ for i in range(len(query_label)):
         query_feature[i], query_label[i], gallery_feature, gallery_label, 100)
     indexOfTopK_list.append(indexOfTopK)
 
-SDM_dict = {}
-for K in tqdm(range(1, 101, 1)):
-    metric = 0
-    for i in range(len(query_label)):
-        P_ = evaluate_SDM(indexOfTopK_list[i], i, K)
-        metric += P_
-    metric = metric / len(query_label)
-    if K in opts.K:
-        print("metric{} = {:.4f}%".format(K, metric * 100))
-    SDM_dict[K] = metric
-
 MA_dict = {}
 for meter in tqdm(range(1,101,1)):
     MA_K = 0
@@ -203,9 +155,5 @@ for meter in tqdm(range(1,101,1)):
     MA_K = MA_K/len(query_label)
     MA_dict[meter]=MA_K
         
-
-with open("SDM@K(1,100).json", 'w') as F:
-    json.dump(SDM_dict, F, indent=4)
-
 with open("MA@K(1,100)", 'w') as F:
     json.dump(MA_dict, F, indent=4)

@@ -14,7 +14,6 @@ from torch.nn import AvgPool2d
 import copy
 from .TransReId import make_transformer_model
 import timm
-assert timm.__version__ == "0.3.2"
 
 ######################################################################
 class GeM(nn.Module):
@@ -132,66 +131,6 @@ class Pooling(nn.Module):
             x = self.gem2(x)
         return x
 
-
-# class setup_Transformer(nn.Module):
-#     def __init__(self,num_classes,img_size,pretrained_dir,droprate=0.5):
-#         super(setup_Transformer, self).__init__()
-#         # Prepare model
-#         config = CONFIGS['ViT-B_16']
-#         self.transformer = VisionTransformer(config, img_size, zero_head=True, num_classes=num_classes,pretrained_dir=pretrained_dir)
-#         self.classifier = ClassBlock(config.hidden_size,num_classes,droprate)
-#         self.transformer.transformer.encoder.layer = self.transformer.transformer.encoder.layer[:-1]
-#         self.transformer.transformer.encoder.encoder_norm = nn.Sequential()
-#         self.b1 = nn.Sequential(
-#             copy.deepcopy(self.transformer.transformer.encoder.layer[-1]),
-#             copy.deepcopy(self.transformer.transformer.encoder.encoder_norm))
-#         self.b2 = nn.Sequential(
-#             copy.deepcopy(self.transformer.transformer.encoder.layer[-1]),
-#             copy.deepcopy(self.transformer.transformer.encoder.encoder_norm))
-#
-#         self.block=4
-#         for i in range(self.block):
-#             name = 'classifier_JVM_' + str(i)
-#             setattr(self, name, ClassBlock(config.hidden_size, num_classes, droprate))
-#
-#
-#
-#     def forward(self,x):
-#         features = self.transformer(x)
-#         # global branch
-#         b1_feat,_ = self.b1(features)  # [64, 129, 768]
-#         global_feat = b1_feat[:, 0]
-#         global_feat = self.classifier(global_feat)
-#
-#
-#         y = global_feat
-#
-#         # JVM Module
-#         # x = features[:, 1:]
-#         # JVM_feat = self.get_split_features(x)
-#
-#         # if self.training:
-#         #     JVM_feat.append(global_feat)
-#         #     y = JVM_feat
-#         # else:
-#         #     global_feature = global_feat.view(global_feat.size(0), -1, 1)
-#         #     y = torch.cat((JVM_feat, global_feature), dim=2)
-#
-#         return y
-    # def get_split_features(self,features):
-    #     N = features.size(1)
-    #     part_len = N//self.block
-    #     r_list = []
-    #     for i in range(self.block):
-    #         f = features[:,i*part_len:(i+1)*part_len,:]
-    #         f = self.b2(f)[0][:,0]
-    #         name = "classifier_JVM_"+str(i)
-    #         cls_func = getattr(self,name)
-    #         r = cls_func(f)
-    #         r_list.append(r)
-    #     if not self.training:
-    #         return torch.stack(r_list,dim=2)
-    #     return r_list
 
 class block_attention(nn.Module):
     def __init__(self):
@@ -597,7 +536,6 @@ class refine_ft_net(nn.Module):
         for i in range(self.block):
             y.append(predict[i])
         if not self.training:
-            # return torch.cat(y,dim=1)
             return torch.stack(y, dim=2)
         return y
 
@@ -607,25 +545,13 @@ class two_view_net(nn.Module):
     def __init__(self, class_num, droprate, stride = 2, pool = 'avg', share_weight = False, Transformer=False, LPN=True, block=4, return_box=False, return_f=False,MSBA=False,deit=False):
         super(two_view_net, self).__init__()
         if Transformer:
-            # self.model_1 = setup_Transformer(num_classes=class_num, img_size=256,
-            #                              pretrained_dir="imagenet21k+imagenet2012_ViT-B_16.npz")
             self.model_1 = make_transformer_model(num_class=class_num,block=block,return_f=return_f,deit=deit)
         elif MSBA:
             self.model_1 = MSBA_net(class_num,droprate=droprate,stride=stride)
-        # elif deit:
-        #     self.model_1 = torch.hub.load('facebookresearch/deit:main', 'deit_small_distilled_patch16_224', pretrained=True)
-        #     self.model_1.head = nn.Linear
-        #     self.model_1.head_dist = nn.Sequential()
-        #     self.deit = deit
-
         else:
             self.model_1 = refine_ft_net(class_num,droprate=droprate, stride=stride, pool=pool, LPN=LPN, block=block,
                                          return_box=return_box,return_f=return_f)
 
-        # if share_weight:
-            # self.model_2 = make_transformer_model(num_class=class_num, view_num=0, jvm=False, block=block,return_f=return_f)
-            # self.model_2.transformer = self.model_1.transformer
-            # self.model_2 = self.model_1
         self.share_weight = share_weight
         if not share_weight:
             if Transformer:
@@ -651,59 +577,9 @@ class two_view_net(nn.Module):
         return y1, y2
 
 
-class three_view_net(nn.Module):
-    def __init__(self, class_num, droprate, stride = 2, pool = 'avg', share_weight = False,Transformer=False,LPN=False,block=4,return_box=False,return_f=False,MSBA=False):
-        super(three_view_net, self).__init__()
-        self.share_weight = share_weight
-        if Transformer:
-            self.model_1 = make_transformer_model(num_class=class_num, view_num=0, jvm=False,block=block,return_f=return_f)
-        elif MSBA:
-            self.model_1 = MSBA_net(class_num,droprate=droprate,stride=stride,pool=pool)
-        else:
-            self.model_1 = refine_ft_net(class_num,droprate=droprate, stride=stride, pool=pool, LPN=LPN, block=block,
-                                         return_box=return_box,return_f=return_f)
-        if self.share_weight:
-            self.model_2 = self.model_1
-        else:
-            if Transformer:
-                self.model_1 = make_transformer_model(num_class=class_num, view_num=0, jvm=False, block=block,
-                                                      return_f=return_f)
-            else:
-                self.model_1 = refine_ft_net(class_num, droprate=droprate, stride=stride, pool=pool, LPN=LPN,
-                                             block=block,
-                                             return_box=return_box, return_f=return_f)
-
-
-    def forward(self, x1, x2, x3, x4 = None): # x4 is extra data
-        if x1 is None:
-            y1 = None
-        else:
-            y1 = self.model_1(x1)
-
-        if x2 is None:
-            y2 = None
-        else:
-            y2 = self.model_2(x2)
-
-        if x3 is None:
-            y3 = None
-        else:
-            y3 = self.model_1(x3)
-
-        if x4 is None:
-            return y1, y2, y3
-        else:
-            y4 = self.model_2(x4)
-        return y1, y2, y3, y4
-
-
 def make_model(opt):
-    if opt.views == 2:
-        model = two_view_net(opt.nclasses, droprate=opt.droprate, stride=opt.stride, pool=opt.pool,
+    model = two_view_net(opt.nclasses, droprate=opt.droprate, stride=opt.stride, pool=opt.pool,
                              share_weight=opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block,return_f=opt.triplet_loss,MSBA=opt.MSBA,deit=opt.deit)
-    elif opt.views == 3:
-        model = three_view_net(opt.nclasses, droprate=opt.droprate, stride=opt.stride, pool=opt.pool,
-                               share_weight=opt.share,Transformer=opt.transformer,LPN=opt.LPN,block=opt.block)
 
     return model
 

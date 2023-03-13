@@ -30,7 +30,7 @@ except ImportError: # will be 3.x series
 # --------
 parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('--gpu_ids',default='0', type=str,help='gpu_ids: e.g. 0  0,1,2  0,2')
-parser.add_argument('--test_dir',default='/media/dmmm/CE31-3598/DataSets/DenseCV_Data/高度数据集/newdata/test',type=str, help='./test_data')
+parser.add_argument('--test_dir',default='/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/data_2022/test',type=str, help='./test_data')
 parser.add_argument('--name', default='resnet', type=str, help='save model path')
 parser.add_argument('--checkpoint', default='net_119.pth', type=str, help='save model path')
 parser.add_argument('--batchsize', default=128, type=int, help='batchsize')
