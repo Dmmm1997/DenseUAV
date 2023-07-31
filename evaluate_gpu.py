@@ -57,7 +57,7 @@ def compute_mAP(index, good_index, junk_index):
     return ap, cmc
 
 ######################################################################
-result = scipy.io.loadmat('pytorch_result.mat')
+result = scipy.io.loadmat('pytorch_result_1.mat')
 query_feature = torch.FloatTensor(result['query_f'])
 query_label = result['query_label'][0]
 gallery_feature = torch.FloatTensor(result['gallery_f'])

@@ -8,10 +8,9 @@ import shutil
 # TN30.32631193830858 TE120.36678791233928 BN30.317870065161575 BE120.37745052386553 xianke
 # TN30.325763471673625 TE120.37341802729506 BN30.320441588110295 BE120.38193743012363
 mapPosInfodir = "/home/dmmm/PycharmProjects/DenseCV/demo/maps/pos.txt"
-
-
 # get_picture(startE, startN, endE, endN, 20, "./计量.tif", server="Google")
-University = "计量"
+
+University = "Jiliang"
 
 with open(mapPosInfodir,"r") as F:
     listLine = F.readlines()
@@ -29,7 +28,7 @@ if os.path.exists(dir_path):
     shutil.rmtree(dir_path)
 os.mkdir(dir_path)
 # 经纬度信息存放文件夹
-infoFile = "/media/dmmm/CE31-3598/DataSets/DenseCV_Data/satelliteHub({})/PosInfo.txt".format(University)
+infoFile = "/media/dmmm/4T-31/DataSets/DenseCV_Data/高度数据集/oridata/train/old_tif/PosInfo.txt".format(University)
 file = open(infoFile, "w")
 
 def sixNumber(str_number):

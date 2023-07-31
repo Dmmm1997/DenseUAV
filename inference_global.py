@@ -23,7 +23,7 @@ parser.add_argument('--imageDir', default="/media/dmmm/CE31-3598/DataSets/DenseC
                     help='test_image_index')
 parser.add_argument('--satelliteMat', default="features{}.mat".format(University), type=str, help='./test_data')
 parser.add_argument('--MapDir', default="../../maps/{}.tif".format(University), type=str, help='./test_data')
-parser.add_argument('--galleryPath', default="/media/dmmm/CE31-3598/DataSets/DenseCV_Data/satelliteHub({})".format(University),
+parser.add_argument('--galleryPath', default="/media/dmmm/4T-3/DataSets/DenseCV_Data/inference_data/satelliteHub({})".format(University),
                     type=str, help='./test_data')
 opts = parser.parse_args()
 # TN30.325763471673625 TE120.37341802729506 BN30.320529681696023 BE120.38174250997761 jinrong

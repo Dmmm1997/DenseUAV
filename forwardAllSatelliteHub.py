@@ -14,7 +14,7 @@ import os
 import scipy.io
 import yaml
 import math
-from tool.utils_server import load_network
+from tool.utils import load_network
 from tqdm import tqdm
 import warnings
 from datasets.Dataloader_University import DataLoader_Inference
@@ -32,7 +32,7 @@ except ImportError: # will be 3.x series
 University="计量"
 parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('--gpu_ids',default='0', type=str,help='gpu_ids: e.g. 0  0,1,2  0,2')
-parser.add_argument('--root',default='/media/dmmm/CE31-3598/DataSets/DenseCV_Data/satelliteHub({})'.format(University),type=str, help='./test_data')
+parser.add_argument('--root',default='/media/dmmm/4T-3/DataSets/DenseCV_Data/inference_data/satelliteHub({})'.format(University),type=str, help='./test_data')
 parser.add_argument('--savename', default='features{}.mat'.format(University), type=str, help='save model path')
 parser.add_argument('--checkpoint', default='net_119.pth', type=str, help='save model path')
 parser.add_argument('--batchsize', default=128, type=int, help='batchsize')
@@ -50,16 +50,8 @@ opt = parser.parse_args()
 config_path = 'opts.yaml'
 with open(config_path, 'r') as stream:
         config = yaml.load(stream)
-opt.stride = config['stride']
-opt.views = config['views']
-opt.transformer = config['transformer']
-opt.pool = config['pool']
-opt.views = config['views']
-opt.LPN = config['LPN']
-opt.block = config['block']
-opt.nclasses = config['nclasses']
-opt.droprate = config['droprate']
-opt.share = config['share']
+for cfg,value in config.items():
+    setattr(opt,cfg,value)
 
 if 'h' in config:
     opt.h = config['h']
@@ -132,6 +124,7 @@ def extract_feature(model,dataloaders, view_index = 1):
         #     ff = torch.FloatTensor(n, 2048).zero_().cuda()
         input_img = Variable(img.cuda())
         outputs, _ = model(input_img, None)
+        outputs = outputs[1]
         ff=outputs
         # norm feature
         if len(ff.shape)==3:
