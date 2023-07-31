@@ -2,7 +2,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torch
 from torch import nn
-from losses.triplet_loss import Tripletloss, WeightedSoftTripletLoss
+from .TripletLoss import Tripletloss, WeightedSoftTripletLoss
 
 
 def cal_cls_loss(outputs, labels, loss_func):

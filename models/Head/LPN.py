@@ -23,9 +23,9 @@ class LPN(nn.Module):
         # 全局特征
         global_cls, global_feature = self.global_classifier(cls_token)
         # LPN特征
-        image_tokens = image_tokens.view(image_tokens.size(0),int(np.sqrt(image_tokens.size(1))),int(np.sqrt(image_tokens.size(1))),image_tokens.size(2))
+        image_tokens = image_tokens.reshape(image_tokens.size(0),int(np.sqrt(image_tokens.size(1))),int(np.sqrt(image_tokens.size(1))),image_tokens.size(2))
         image_tokens = image_tokens.permute(0,3,1,2)
-        LPN_result = self.get_part_pool(image_tokens).squeeze()
+        LPN_result = self.get_part_pool(image_tokens).squeeze(-1)
         LPN_cls_features = self.part_classifier(LPN_result)
         LPN_cls = []
         LPN_features = []

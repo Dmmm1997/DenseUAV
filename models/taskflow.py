@@ -30,7 +30,7 @@ class Model(nn.Module):
     def load_params(self, load_from):
         pretran_model = torch.load(load_from)
         model2_dict = self.state_dict()
-        state_dict = {k: v for k, v in pretran_model.items() if k in model2_dict.keys()}
+        state_dict = {k: v for k, v in pretran_model.items() if k in model2_dict.keys() and v.size() == model2_dict[k].size()}
         model2_dict.update(state_dict)
         self.load_state_dict(model2_dict)
 

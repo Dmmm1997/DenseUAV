@@ -10,15 +10,25 @@ import matplotlib.pyplot as plt
 #######################################################################
 # Evaluate
 parser = argparse.ArgumentParser(description='Demo')
-parser.add_argument('--query_index', default=0, type=int, help='test_image_index')
-parser.add_argument('--test_dir',default='./data/test',type=str, help='./test_data')
+parser.add_argument('--query_index', default=77, type=int, help='test_image_index')
+parser.add_argument('--test_dir',default='/home/dmmm/Dataset/DenseUAV/data_2022/test',type=str, help='./test_data')
+parser.add_argument('--config',
+                    default="/home/dmmm/Dataset/DenseUAV/data_2022/Dense_GPS_ALL.txt", type=str,
+                    help='./test_data')
 opts = parser.parse_args()
 
+configDict = {}
+with open(opts.config, "r") as F:
+    context = F.readlines()
+    for line in context:
+        splitLineList = line.split(" ")
+        configDict[splitLineList[0].split("/")[-2]] = [float(splitLineList[1].split("E")[-1]),
+                                                       float(splitLineList[2].split("N")[-1])]
 
-#gallery_name = 'gallery_satellite'
-#query_name = 'query_drone'
-gallery_name = 'gallery_drone'
-query_name = 'query_satellite'
+gallery_name = 'gallery_satellite'
+query_name = 'query_drone'
+# gallery_name = 'gallery_drone'
+# query_name = 'query_satellite'
 
 data_dir = opts.test_dir
 image_datasets = {x: datasets.ImageFolder( os.path.join(data_dir,x) ) for x in [gallery_name, query_name]}
@@ -34,7 +44,7 @@ def imshow(path, title=None):
     plt.pause(0.1)  # pause a bit so that plots are updated
 
 ######################################################################
-result = scipy.io.loadmat('pytorch_result.mat')
+result = scipy.io.loadmat('pytorch_result_1.mat')
 query_feature = torch.FloatTensor(result['query_f'])
 query_label = result['query_label'][0]
 gallery_feature = torch.FloatTensor(result['gallery_f'])
@@ -79,12 +89,16 @@ index = sort_img(query_feature[i],query_label[i],gallery_feature,gallery_label)
 
 ########################################################################
 # Visualize the rank result
-
 query_path, _ = image_datasets[query_name].imgs[i]
 query_label = query_label[i]
 print(query_path)
+label6num = query_path.split("/")[-2]
+x_q,y_q = configDict[label6num]
+
 print('Top 10 images are as follow:')
-save_folder = 'image_show/%02d'%opts.query_index
+save_folder = 'image_show/%02d' % opts.query_index
+if not os.path.exists("image_show"):
+    os.mkdir("image_show")
 if not os.path.isdir(save_folder):
     os.mkdir(save_folder)
 os.system('cp %s %s/query.jpg'%(query_path, save_folder))
@@ -94,19 +108,22 @@ try: # Visualize Ranking Result
     fig = plt.figure(figsize=(16,4))
     ax = plt.subplot(1,11,1)
     ax.axis('off')
-    imshow(query_path,'query')
+    imshow(query_path)
+    ax.set_title("x:{:.7f}\ny:{:.7f}".format(x_q,y_q), color='blue',fontsize=5)
     for i in range(10):
         ax = plt.subplot(1,11,i+2)
         ax.axis('off')
         img_path, _ = image_datasets[gallery_name].imgs[index[i]]
         label = gallery_label[index[i]]
+        labelg6num = img_path.split("/")[-2]
+        x_g,y_g = configDict[label6num]
         print(label)
         imshow(img_path)
-        os.system('cp %s %s/s%02d.jpg'%(img_path, save_folder, i))
+        os.system('cp %s %s/s%02d.tif'%(img_path, save_folder, i))
         if label == query_label:
-            ax.set_title('%d'%(i+1), color='green')
+            ax.set_title("x:{:.7f}\ny:{:.7f}".format(x_g,y_g),color='green',fontsize=5)
         else:
-            ax.set_title('%d'%(i+1), color='red')
+            ax.set_title("x:{:.7f}\ny:{:.7f}".format(x_g,y_g), color='red',fontsize=5)
         print(img_path)
     #plt.pause(100)  # pause a bit so that plots are updated
 except RuntimeError:
@@ -115,5 +132,5 @@ except RuntimeError:
         print(img_path[0])
     print('If you want to see the visualization of the ranking result, graphical user interface is needed.')
 
-fig.savefig("show.png")
+fig.savefig(save_folder+"/show.png",dpi = 600)
 

@@ -13,13 +13,10 @@ from optimizers.make_optimizer import make_optimizer
 # from models.model import make_model
 from models.taskflow import make_model
 from datasets.make_dataloader import make_dataset
-from tool.utils import save_network, copyfiles2checkpoints, get_preds, get_logger, calc_flops_params
+from tool.utils import save_network, copyfiles2checkpoints, get_preds, get_logger, calc_flops_params, set_seed
 import warnings
 from losses.cal_loss import cal_loss
-
-
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+from losses.loss import Loss
 
 
 warnings.filterwarnings("ignore")
@@ -33,18 +30,16 @@ def get_parse():
                         type=str, help='output model name')
     parser.add_argument('--data_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/train',
                         type=str, help='training dir path')
-    parser.add_argument('--color_jitter', action='store_true',
-                        help='use color jitter in training')
     parser.add_argument('--num_worker', default=0, type=int, help='')
-    parser.add_argument('--batchsize', default=1, type=int, help='batchsize')
+    parser.add_argument('--batchsize', default=2, type=int, help='batchsize')
     parser.add_argument('--pad', default=0, type=int, help='padding')
     parser.add_argument('--h', default=256, type=int, help='height')
     parser.add_argument('--w', default=256, type=int, help='width')
-    parser.add_argument('--rotate', default=0, type=int,
-                        help='rotate in transform')
-    parser.add_argument('--randomcrop', default=0,
-                        type=float, help='crop in transform')
-    parser.add_argument('--erasing_p', default=0, type=float,
+    parser.add_argument('--rr', default="", type=str, help='random rotate')
+    parser.add_argument('--ra', default="", type=str, help='random affine')
+    parser.add_argument('--re', default="", type=str, help='random erasing')
+    parser.add_argument('--cj', default="", type=str, help='color jitter')
+    parser.add_argument('--erasing_p', default=0.3, type=float,
                         help='Random Erasing probability, in [0,1]')
     parser.add_argument('--warm_epoch', default=0, type=int,
                         help='the first K epoch that needs warm up')
@@ -58,18 +53,18 @@ def get_parse():
     parser.add_argument('--autocast', action='store_true',
                         default=True, help='use mix precision')
     parser.add_argument('--block', default=2, type=int, help='')
-    parser.add_argument('--kl_loss', action='store_true',
-                        default=False, help='kl_loss')
-    parser.add_argument('--triplet_loss', default=0, type=int, help='')
-    parser.add_argument('--WSTR', default=0, type=int,
-                        help='weighted soft triplet loss')
+    parser.add_argument('--cls_loss', default="FocalLoss", type=str, help='')
+    parser.add_argument('--feature_loss', default="WeightedSoftTripletLoss", type=str, help='')
+    parser.add_argument('--kl_loss', default="", type=str, help='')
     parser.add_argument('--sample_num', default=1, type=int,
                         help='num of repeat sampling')
     parser.add_argument('--num_epochs', default=120, type=int, help='')
-    parser.add_argument('--num_bottleneck', default=128, type=int, help='')
+    parser.add_argument('--num_bottleneck', default=512, type=int, help='')
     parser.add_argument('--load_from', default="", type=str, help='')
-    parser.add_argument('--backbone', default="Pvtv2b2", type=str, help='')
-    parser.add_argument('--head', default="SingleBranchCNN", type=str, help='')
+    parser.add_argument('--backbone', default="ViTS-224", type=str, help='')
+    parser.add_argument('--head', default="SingleBranch", type=str, help='')
+    parser.add_argument('--head_pool', default="max", type=str, help='')
+    
 
     opt = parser.parse_args()
     print(opt)
@@ -81,14 +76,15 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
         "checkpoints/{}/train.log".format(opt.name))
 
     # thop计算MACs
-    macs, params = calc_flops_params(
-        model, (1, 3, opt.h, opt.w), (1, 3, opt.h, opt.w))
-    logger.info("mdoel MACs={}, Params={}".format(macs, params))
+    # macs, params = calc_flops_params(
+    #     model, (1, 3, opt.h, opt.w), (1, 3, opt.h, opt.w))
+    # logger.info("model MACs={}, Params={}".format(macs, params))
 
     use_gpu = opt.use_gpu
     num_epochs = opt.num_epochs
     since = time.time()
     scaler = GradScaler()
+    nnloss = Loss(opt)
     for epoch in range(num_epochs):
         logger.info('Epoch {}/{}'.format(epoch, num_epochs - 1))
         logger.info('-' * 50)
@@ -124,8 +120,8 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
                 outputs, outputs2 = model(inputs, inputs3)
             # print("model_time:{}".format(time.time()-start_time))
             # 计算损失
-            loss, cls_loss, f_triplet_loss, kl_loss = cal_loss(
-                opt, outputs, outputs2, labels, labels3)
+            loss, cls_loss, f_triplet_loss, kl_loss = nnloss(
+                outputs, outputs2, labels, labels3)
             # start_time = time.time()
             # 反向传播
             if opt.autocast:
@@ -180,6 +176,8 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
 
 
 if __name__ == '__main__':
+    set_seed(666)
+
     opt = get_parse()
     str_ids = opt.gpu_ids.split(',')
     gpu_ids = []

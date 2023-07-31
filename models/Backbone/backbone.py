@@ -1,8 +1,4 @@
-import torch
 import torch.nn as nn
-from torchvision import models
-from torch.autograd import Variable
-from torch.nn import functional as F
 import timm
 
 
@@ -53,6 +49,21 @@ class Backbone(nn.Module):
         elif backbone=="Convnext-T":
             backbone_model = timm.create_model("convnext_tiny", pretrained=True)
             output_channel = 768
+        elif backbone=="EfficientNet-B2":
+            backbone_model = timm.create_model("efficientnet_b2", pretrained=True)
+            output_channel = 1408
+        elif backbone=="EfficientNet-B3":
+            backbone_model = timm.create_model("efficientnet_b3", pretrained=True)
+            output_channel = 1536
+        elif backbone=="EfficientNet-B5":
+            backbone_model = timm.create_model("tf_efficientnet_b5", pretrained=True)
+            output_channel = 2048
+        elif backbone=="EfficientNet-B6":
+            backbone_model = timm.create_model("tf_efficientnet_b6", pretrained=True)
+            output_channel = 2304
+        elif backbone=="vgg16":
+            backbone_model = timm.create_model("vgg16", pretrained=True)
+            output_channel = 512
         else:
             raise NameError("{} not in the backbone list!!!".format(backbone))
         return backbone_model,output_channel
@@ -60,7 +71,3 @@ class Backbone(nn.Module):
     def forward(self, image):
         features = self.backbone.forward_features(image)
         return features
-
-
-
-    

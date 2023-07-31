@@ -10,8 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": false,
-            "cwd": "${workspaceFolder}"
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/checkpoints/Head_Experiment-FSRA2B"
         }
     ]
 }

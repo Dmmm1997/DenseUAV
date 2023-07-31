@@ -1,11 +1,9 @@
-import torch
 import torch.nn as nn
-import timm
 from .SingleBranch import SingleBranch, SingleBranchCNN, SingleBranchSwin
-from .MSBA import MSBA
 from .FSRA import FSRA
 from .LPN import LPN
-
+from .GeM import GeM
+from .NetVLAD import NetVLAD
 
 def make_head(opt):
     return Head(opt)
@@ -25,12 +23,14 @@ class Head(nn.Module):
             head_model = SingleBranchCNN(opt)
         elif head == "SingleBranchSwin":
             head_model = SingleBranchSwin(opt)
-        elif head == "MSBA":
-            head_model = MSBA(opt)
+        elif head == "NetVLAD":
+            head_model = NetVLAD(opt)
         elif head == "FSRA":
             head_model = FSRA(opt)
         elif head == "LPN":
             head_model = LPN(opt)
+        elif head == "GeM":
+            head_model = GeM(opt)
         else:
             raise NameError("{} not in the head list!!!".format(head))
         return head_model

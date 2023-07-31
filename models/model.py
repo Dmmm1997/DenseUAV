@@ -139,84 +139,45 @@ class block_attention(nn.Module):
 
     def forward(self,x):
         weights = F.softmax(x, dim=2)
-        # print(x.shape)
-        # print(weights.shape)
         x = x * weights
 
         return x
 
-class MSBA_net(nn.Module):
-    def __init__(self, class_num, droprate=0.5, stride=2, init_model=None, pool='avg', block=6):
-        super(MSBA_net, self).__init__()
-        model_ft = models.resnet50(pretrained=True)
-        # avg pooling to global pooling
-        if stride == 1:
-            model_ft.layer4[0].downsample[0].stride = (1,1)
-            model_ft.layer4[0].conv2.stride = (1,1)
-
+class MSBA(nn.Module):
+    def __init__(self, class_num, droprate=0.5, init_model=None, pool='avg', block=6):
+        super(MSBA, self).__init__()
         self.pool = pool
-        self.model = model_ft
         self.block = block
         if init_model!=None:
             self.model = init_model.model
             self.pool = init_model.pool
-            #self.classifier.add_block = init_model.classifier.add_block
-        # self.p1 =
-        # self.p2 =
-        # self.p3 =
-        # self.p4 =
 
         self.attention = block_attention()
-        self.classifier00 = ClassBlock(3072,class_num,droprate)
+        self.classifier = ClassBlock(3072,class_num,droprate)
         for i in range(self.block+2):
             name = 'classifier'+str(i)
-            #name1 = 'classifier1'+str(i)
             setattr(self, name, ClassBlock(2048, class_num, droprate))
 
     def forward(self, x):
-        x = self.model.conv1(x)
-        x = self.model.bn1(x)
-        x = self.model.relu(x)
-        x = self.model.maxpool(x)
-        x = self.model.layer1(x)
-        #============================
-        x = self.model.layer2(x)
-        x2 = self.model.layer3(x)
-        x1 = self.model.layer4(x2)
-        # ============================
         if self.pool == 'avg+max':
             x1 = self.get_part_pool(x, pool='avg')
             x2 = self.get_part_pool(x, pool='max')
             x = torch.cat((x1,x2), dim = 1)
             x = x.view(x.size(0), x.size(1), -1)
         elif self.pool == 'avg':
-            # ============================
             x = self.get_part_pool(x1)
             x = x.view(x.size(0), x.size(1), -1)
-            #x1 = self.get_part_pool(x1)
             x1 = torch.nn.AdaptiveMaxPool2d((1,1))(x1)
             x1 = x1.view(x1.size(0),x1.size(1),-1)[:,:,0]
             x2 = torch.nn.AdaptiveMaxPool2d((1, 1))(x2)
             x2 = x2.view(x2.size(0), x2.size(1), -1)[:, :, 0]
-            #x1 = x1.view(x1.size(0),x1.size(1),-1)
-            #x = torch.cat([x,x1],dim=1)
-
-        # ============================
         elif self.pool == 'max':
             x = self.get_part_pool(x, pool='max')
             x = x.view(x.size(0), x.size(1), -1)
-        #x = self.classifier(x)
-        #return x
-        #=============================
         y = self.part_classifier(x)
         x22 = torch.cat([x1, x2], dim=1)
-        y22 = self.classifier00(x22)
-        if self.training:
-            y.append(y22)
-        else:
-            y = torch.cat([y, y22.unsqueeze(dim=2)], dim=2)
+        y22 = self.classifier(x22)
         return y
-        #=============================
 
 
     def get_part_pool(self, x, pool='avg', no_overlap=True):

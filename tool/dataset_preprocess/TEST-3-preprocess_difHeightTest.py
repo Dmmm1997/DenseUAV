@@ -17,7 +17,7 @@ def mkdirAndCopyfile(ori_path,to_path):
 
 
 if __name__ == '__main__':
-    root = "/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/newdata/test"
+    root = "/home/dmmm/Dataset/DenseUAV/data_2022/test"
     root_80 = os.path.join(root,"queryDrone80")
     root_90 = os.path.join(root,"queryDrone90")
     root_100 = os.path.join(root,"queryDrone100")

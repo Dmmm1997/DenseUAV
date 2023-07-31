@@ -133,3 +133,6 @@ dmypy.json
 *.pth
 maps/
 checkpoints/
+visualization/
+.history/
+.vscode/

@@ -154,6 +154,7 @@ def evaluate_SDM(indexOfTopK, queryIndex, K):
     query_path, _ = image_datasets[query_name].imgs[queryIndex]
     galleryTopKPath = [image_datasets[gallery_name].imgs[i][0]
                        for i in indexOfTopK[:K]]
+    height = os.path.basename(query_path).split(".")[0]
     # get position information including latitude and longitude
     queryPosInfo = getLatitudeAndLongitude(query_path)
     galleryTopKPosInfo = getLatitudeAndLongitude(galleryTopKPath)
@@ -161,7 +162,7 @@ def evaluate_SDM(indexOfTopK, queryIndex, K):
     distance = euclideanDistance(queryPosInfo, galleryTopKPosInfo)
     # compute single query evaluate result
     P = evaluateSingle(distance, K)
-    return P
+    return P, height
 
 
 def evaluate_MA(indexOfTop1, queryIndex):
@@ -183,12 +184,27 @@ for i in range(len(query_label)):
     indexOfTopK_list.append(indexOfTopK)
 
 SDM_dict = {}
+SDM_80m_dict = {}
+SDM_90m_dict = {}
+SDM_100m_dict = {}
 for K in tqdm(range(1, 101, 1)):
     metric = 0
+    metric_80m = []
+    metric_90m = []
+    metric_100m = []
     for i in range(len(query_label)):
-        P_ = evaluate_SDM(indexOfTopK_list[i], i, K)
+        P_, height = evaluate_SDM(indexOfTopK_list[i], i, K)
+        if "80" in height:
+            metric_80m.append(P_)
+        elif "90" in height:
+            metric_90m.append(P_)
+        elif "100" in height:
+            metric_100m.append(P_)
         metric += P_
     metric = metric / len(query_label)
+    SDM_80m_dict[K] = np.mean(metric_80m)
+    SDM_90m_dict[K] = np.mean(metric_90m)
+    SDM_100m_dict[K] = np.mean(metric_100m)
     if K in opts.K:
         print("metric{} = {:.2f}%".format(K, metric * 100))
     SDM_dict[K] = metric
@@ -206,6 +222,15 @@ for meter in tqdm(range(1,101,1)):
 
 with open("SDM@K(1,100).json", 'w') as F:
     json.dump(SDM_dict, F, indent=4)
+
+with open("80m_SDM@K(1,100).json", 'w') as F:
+    json.dump(SDM_80m_dict, F, indent=4)
+
+with open("90m_SDM@K(1,100).json", 'w') as F:
+    json.dump(SDM_90m_dict, F, indent=4)
+
+with open("100m_SDM@K(1,100).json", 'w') as F:
+    json.dump(SDM_100m_dict, F, indent=4)
 
 with open("MA@K(1,100)", 'w') as F:
     json.dump(MA_dict, F, indent=4)

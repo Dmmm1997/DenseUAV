@@ -1,4 +1,4 @@
-name="NEW_Pvtv2b2-224-Tr_timm_nb512_lr0.003"
+name=""
 data_dir="/home/dmmm/Dataset/DenseUAV/data_2022/train" #"/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/data_2021/train"
 # data_dir="/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/data_2021/train"
 test_dir="/home/dmmm/Dataset/DenseUAV/data_2022/test" #"/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/data_2021/test"
@@ -13,8 +13,9 @@ triplet_loss=1
 block=1
 WSTR=0
 num_bottleneck=512
-backbone="Pvtv2b2"
-head="SingleBranchCNN"
+backbone="ViT-S-224"
+head="SingleBranch"
+head_pool="avg" # global avg max avg+max
 h=224
 w=224
 load_from="no"
@@ -29,3 +30,4 @@ python test.py --name $name --test_dir $test_dir --gpu_ids $gpu_ids --num_worker
 python evaluate_gpu.py
 python evaluateDistance.py
 cd ../../
+

@@ -1,9 +1,7 @@
 import os
 import torch
 import yaml
-import torch.nn as nn
-import parser
-import importlib
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -11,6 +9,7 @@ from shutil import copyfile, copytree, rmtree
 import logging
 from models.taskflow import make_model
 from thop import profile, clever_format
+import math
 
 
 def get_logger(filename, verbosity=1, name=None):
@@ -49,7 +48,6 @@ def copyfiles2checkpoints(opt):
     # record every run
     copy_file_or_tree('train.py', dir_name)
     copy_file_or_tree('test.py', dir_name)
-    copy_file_or_tree('test_server.py', dir_name)
     copy_file_or_tree('evaluate_gpu.py', dir_name)
     copy_file_or_tree('evaluateDistance.py', dir_name)
     copy_file_or_tree('datasets', dir_name)
@@ -58,7 +56,6 @@ def copyfiles2checkpoints(opt):
     copy_file_or_tree('optimizers', dir_name)
     copy_file_or_tree('tool', dir_name)
     copy_file_or_tree('train_test_local.sh', dir_name)
-    copy_file_or_tree('heatmap.py', dir_name)
 
     # save opts
     with open('%s/opts.yaml' % dir_name, 'w') as fp:
@@ -147,7 +144,7 @@ def check_box(images, boxes):
 def load_network(opt):
     save_filename = opt.checkpoint
     model = make_model(opt)
-    print('Load the model from %s' % save_filename)
+    # print('Load the model from %s' % save_filename)
     network = model
     network.load_state_dict(torch.load(save_filename))
     return network
@@ -195,3 +192,29 @@ def calc_flops_params(model,
         model, (inputs_drone, inputs_satellite,), verbose=False)
     macs, params = clever_format([total_ops, total_params], "%.3f")
     return macs, params
+
+
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.enabled = True
+    random.seed(seed)
+
+
+def Distance(lata, loga, latb, logb):
+    # EARTH_RADIUS = 6371.0
+    EARTH_RADIUS = 6378.137
+    PI = math.pi
+    # // 转弧度
+    lat_a = lata * PI / 180
+    lat_b = latb * PI / 180
+    a = lat_a - lat_b
+    b = loga * PI / 180 - logb * PI / 180
+    dis = 2 * math.asin(math.sqrt(math.pow(math.sin(a / 2), 2) + math.cos(lat_a)
+                                  * math.cos(lat_b) * math.pow(math.sin(b / 2), 2)))
+
+    distance = EARTH_RADIUS * dis * 1000
+    return distance

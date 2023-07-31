@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, division
-from datasets.queryDataset import Dataset_query, Query_transforms
+from datasets.queryDataset import Dataset_query, Query_transforms, Dataset_gallery, test_collate_fn
 
 import argparse
 import torch
@@ -24,23 +24,25 @@ parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('--gpu_ids', default='0', type=str,
                     help='gpu_ids: e.g. 0  0,1,2  0,2')
 parser.add_argument(
-    '--test_dir', default='/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/data_2022/test', type=str, help='./test_data')
+    '--test_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/test', type=str, help='./test_data')
 parser.add_argument('--name', default='resnet',
                     type=str, help='save model path')
 parser.add_argument('--checkpoint', default='net_119.pth',
                     type=str, help='save model path')
 parser.add_argument('--batchsize', default=128, type=int, help='batchsize')
-parser.add_argument('--h', default=256, type=int, help='height')
-parser.add_argument('--w', default=256, type=int, help='width')
+parser.add_argument('--h', default=224, type=int, help='height')
+parser.add_argument('--w', default=224, type=int, help='width')
 parser.add_argument('--ms', default='1', type=str,
                     help='multiple_scale: e.g. 1 1,1.1  1,1.1,1.2')
-parser.add_argument('--mode', default='1', type=int,
+parser.add_argument('--mode', default='hard', type=str,
                     help='1:drone->satellite   2:satellite->drone')
-parser.add_argument('--num_worker', default=4, type=int,
+parser.add_argument('--num_worker', default=8, type=int,
                     help='1:drone->satellite   2:satellite->drone')
 # parser.add_argument('--LPN', default=True, type=bool, help='')
 # parser.add_argument('--block', default=2, type=int, help='')
 parser.add_argument('--box_vis', default=False, type=int, help='')
+
+parser.add_argument('--split_feature', default=1, type=int, help='')
 
 opt = parser.parse_args()
 print(opt.name)
@@ -50,7 +52,8 @@ config_path = 'opts.yaml'
 with open(config_path, 'r') as stream:
     config = yaml.load(stream)
 for cfg, value in config.items():
-    setattr(opt, cfg, value)
+    if cfg not in opt:
+        setattr(opt, cfg, value)
 
 str_ids = opt.gpu_ids.split(',')
 test_dir = opt.test_dir
@@ -89,64 +92,50 @@ data_query_transforms = transforms.Compose([
 
 data_dir = test_dir
 
-image_datasets_query = {x: datasets.ImageFolder(os.path.join(
-    data_dir, x), data_query_transforms) for x in ['query_satellite', 'query_drone']}
+image_datasets_query = Dataset_query(os.path.join(data_dir, "query_drone"), data_query_transforms)
 
-image_datasets_gallery = {x: datasets.ImageFolder(os.path.join(
-    data_dir, x), data_transforms) for x in ['gallery_satellite', 'gallery_drone']}
+# image_datasets_gallery = Dataset_gallery(os.path.join(opt.test_dir, "total_info_ms_i10m.txt"), data_transforms)
 
-image_datasets = {**image_datasets_query, **image_datasets_gallery}
+image_datasets_gallery = Dataset_gallery(os.path.join(opt.test_dir, "total_info_ss_i10m.txt"), data_transforms)
 
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
-                                              shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'gallery_drone', 'query_satellite', 'query_drone']}
+
+dataloaders_query = torch.utils.data.DataLoader(image_datasets_query, batch_size=opt.batchsize, shuffle=False, num_workers=opt.num_worker, collate_fn=test_collate_fn)
+
+split_nums = len(image_datasets_gallery)//opt.split_feature
+
+list_split = [split_nums]*opt.split_feature
+
+list_split[-1] = len(image_datasets_gallery)-(opt.split_feature-1)*split_nums
+
+gallery_datasets_list = torch.utils.data.random_split(image_datasets_gallery, list_split)
+
+dataloaders_gallery = {ind: torch.utils.data.DataLoader(gallery_datasets_list[ind], batch_size=opt.batchsize, shuffle=False, num_workers=opt.num_worker, collate_fn=test_collate_fn) for ind in range(opt.split_feature)}
+
 use_gpu = torch.cuda.is_available()
-
-
-def fliplr(img):
-    '''flip horizontal'''
-    inv_idx = torch.arange(img.size(3)-1, -1, -1).long()  # N x C x H x W
-    img_flip = img.index_select(3, inv_idx)
-    return img_flip
-
-
-def which_view(name):
-    if 'satellite' in name:
-        return 1
-    elif 'street' in name:
-        return 2
-    elif 'drone' in name:
-        return 3
-    else:
-        print('unknown view')
-    return -1
-
 
 def extract_feature(model, dataloaders, view_index=1):
     features = torch.FloatTensor()
-    count = 0
+    infos_list = np.zeros((0,2),dtype=np.float32)
+    path_list = []
     for data in tqdm(dataloaders):
-        img, _ = data
-        batchsize = img.size()[0]
-        count += batchsize
+        img, infos, path = data
+        path_list.extend(path)
+        # infos_list.extend(infos)
+        infos_list = np.concatenate((infos_list,infos),0)
         # if opt.LPN:
         #     # ff = torch.FloatTensor(n,2048,6).zero_().cuda()
         #     ff = torch.FloatTensor(n,512,opt.block).zero_().cuda()
         # else:
         #     ff = torch.FloatTensor(n, 2048).zero_().cuda()
-        for i in range(2):
-            if(i == 1):
-                img = fliplr(img)
-            input_img = Variable(img.cuda())
-            if view_index == 1:
-                outputs, _ = model(input_img, None)
-            elif view_index == 3:
-                _, outputs = model(None, input_img)
-            outputs = outputs[1]
-            if i == 0:
-                ff = outputs
-            else:
-                ff += outputs
-        # norm feature
+
+        input_img = Variable(img.cuda())
+        if view_index == 1:
+            outputs, _ = model(input_img, None)
+        elif view_index == 3:
+            _, outputs = model(None, input_img)
+        outputs = outputs[1]
+        ff = outputs
+        # # norm feature
         if len(ff.shape) == 3:
             # feature size (n,2048,6)
             # 1. To treat every part equally, I calculate the norm for every 2048-dim part feature.
@@ -160,23 +149,8 @@ def extract_feature(model, dataloaders, view_index=1):
             ff = ff.div(fnorm.expand_as(ff))
 
         features = torch.cat((features, ff.data.cpu()), 0)
-    return features
+    return features,infos_list,path_list
 
-
-def get_id(img_path):
-    camera_id = []
-    labels = []
-    paths = []
-    for path, v in img_path:
-        folder_name = os.path.basename(os.path.dirname(path))
-        labels.append(int(folder_name))
-        paths.append(path)
-    return labels, paths
-
-
-######################################################################
-# Load Collected data Trained model
-print('-------test-----------')
 
 model = load_network(opt)
 print("这是%s的结果" % opt.checkpoint)
@@ -188,34 +162,20 @@ if use_gpu:
 # Extract feature
 since = time.time()
 
-if opt.mode == 1:
-    query_name = 'query_drone'
-    gallery_name = 'gallery_satellite'
-elif opt.mode == 2:
-    query_name = 'query_satellite'
-    gallery_name = 'gallery_drone'
-else:
-    raise Exception("opt.mode is not required")
-
-
-which_gallery = which_view(gallery_name)
-which_query = which_view(query_name)
-print('%d -> %d:' % (which_query, which_gallery))
-print(query_name.split("_")[-1], "->", gallery_name.split("_")[-1])
-
-gallery_path = image_datasets[gallery_name].imgs
-
-query_path = image_datasets[query_name].imgs
-
-gallery_label, gallery_path = get_id(gallery_path)
-query_label, query_path = get_id(query_path)
-
 if __name__ == "__main__":
     with torch.no_grad():
-        query_feature = extract_feature(
-            model, dataloaders[query_name], which_query)
-        gallery_feature = extract_feature(
-            model, dataloaders[gallery_name], which_gallery)
+        query_feature, query_infos, query_path = extract_feature(
+            model, dataloaders_query, 1)
+        gallery_features = torch.FloatTensor()
+        gallery_infos = np.zeros((0,2),dtype=np.float32)
+        gallery_paths = []
+        for i in range(opt.split_feature):
+            gallery_feature,gallery_info,gallery_path = extract_feature(
+                model, dataloaders_gallery[i], 3)
+            gallery_infos = np.concatenate((gallery_infos,gallery_info),0)
+            gallery_features = torch.cat((gallery_features,gallery_feature),0)
+            gallery_paths.extend(gallery_path)
+
 
     # For street-view image, we use the avg feature as the final feature.
 
@@ -228,10 +188,15 @@ if __name__ == "__main__":
             time_elapsed // 60, time_elapsed % 60))
 
     # Save to Matlab for check
-    result = {'gallery_f': gallery_feature.numpy(), 'gallery_label': gallery_label, 'gallery_path': gallery_path,
-              'query_f': query_feature.numpy(), 'query_label': query_label, 'query_path': query_path}
-    scipy.io.savemat('pytorch_result_{}.mat'.format(opt.mode), result)
+    
+    result = {'gallery_f': gallery_features.numpy(),  'gallery_infos': gallery_infos.astype(np.float32), 'query_path':query_path,
+                'query_f': query_feature.numpy(),  'query_infos': query_infos.astype(np.float32), 'gallery_path':gallery_paths}
+    scipy.io.savemat('pytorch_result_{}_ss.mat'.format(opt.mode), result)
 
     # print(opt.name)
     # result = 'result.txt'
     # os.system('python evaluate_gpu.py | tee -a %s'%result)
+
+
+
+
