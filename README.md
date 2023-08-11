@@ -6,7 +6,7 @@ This repository contains code and dataset for the paper titled [Vision-Based UAV
 
 ![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/framework.jpg)
 
-![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/model.pdf)
+![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/model.png)
 
 
 
