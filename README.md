@@ -35,7 +35,7 @@ The dataset split is as follows:
 More detailed file structure:
 ```
 ├── DenseUAV/
-│   ├── Dense_GPS_ALL.txt
+│   ├── Dense_GPS_ALL.txt           /* format as: path latitude longitude height
 │   ├── Dense_GPS_test.txt
 │   ├── Dense_GPS_train.txt
 │   ├── train/
@@ -46,14 +46,21 @@ More detailed file structure:
 │               ├── H80.JPG
 |           ...
 │       ├── satellite/               /* satellite-view training images       
+│           ├── 000001
+│               ├── H100_old.tif
+│               ├── H90_old.tif
+│               ├── H80_old.tif
+│               ├── H100.tif
+│               ├── H90.tif
+│               ├── H80.tif
+|           ...
 │   ├── test/
-│       ├── query_drone/             /* UAV-view testing images       
+│       ├── query_drone/             /* UAV-view testing images  
 │       ├── query_satellite/         /* satellite-view testing images       
 ```
 
 
 ## Prerequisites
-
 - Python 3.7+
 - GPU Memory >= 8G
 - Numpy 1.21.2
