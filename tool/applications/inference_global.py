@@ -8,7 +8,7 @@ import glob
 from torchvision import transforms
 from PIL import Image
 import yaml
-from tool.utils_server import load_network
+from tool.utils import load_network
 from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
 import os

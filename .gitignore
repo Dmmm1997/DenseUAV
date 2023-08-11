@@ -136,3 +136,4 @@ checkpoints/
 visualization/
 .history/
 .vscode/
+experiment_*.sh

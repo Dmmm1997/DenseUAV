@@ -24,8 +24,8 @@ parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('--gpu_ids', default='0', type=str,
                     help='gpu_ids: e.g. 0  0,1,2  0,2')
 parser.add_argument(
-    '--test_dir', default='/media/dmmm/4T-3/DataSets/DenseCV_Data/高度数据集/data_2022/test', type=str, help='./test_data')
-parser.add_argument('--name', default='resnet',
+    '--test_dir', default='', type=str, help='./test_data')
+parser.add_argument('--name', default='',
                     type=str, help='save model path')
 parser.add_argument('--checkpoint', default='net_119.pth',
                     type=str, help='save model path')
@@ -34,16 +34,12 @@ parser.add_argument('--h', default=256, type=int, help='height')
 parser.add_argument('--w', default=256, type=int, help='width')
 parser.add_argument('--ms', default='1', type=str,
                     help='multiple_scale: e.g. 1 1,1.1  1,1.1,1.2')
-parser.add_argument('--mode', default='1', type=int,
-                    help='1:drone->satellite   2:satellite->drone')
-parser.add_argument('--num_worker', default=4, type=int,
-                    help='1:drone->satellite   2:satellite->drone')
-# parser.add_argument('--LPN', default=True, type=bool, help='')
-# parser.add_argument('--block', default=2, type=int, help='')
-parser.add_argument('--box_vis', default=False, type=int, help='')
-
+parser.add_argument('--num_worker', default=4, type=int,help='')
+parser.add_argument('--mode',default='1', type=int,help='1:drone->satellite   2:satellite->drone')
 opt = parser.parse_args()
+
 print(opt.name)
+
 ###load config###
 # load the training config
 config_path = 'opts.yaml'
@@ -64,6 +60,7 @@ for str_id in str_ids:
 print('We use the scale: %s' % opt.ms)
 str_ms = opt.ms.split(',')
 ms = []
+
 for s in str_ms:
     s_f = float(s)
     ms.append(math.sqrt(s_f))
@@ -90,15 +87,15 @@ data_query_transforms = transforms.Compose([
 data_dir = test_dir
 
 image_datasets_query = {x: datasets.ImageFolder(os.path.join(
-    data_dir, x), data_query_transforms) for x in ['query_satellite', 'query_drone']}
+    data_dir, x), data_query_transforms) for x in ['query_drone']}
 
 image_datasets_gallery = {x: datasets.ImageFolder(os.path.join(
-    data_dir, x), data_transforms) for x in ['gallery_satellite', 'gallery_drone']}
+    data_dir, x), data_transforms) for x in ['gallery_satellite']}
 
 image_datasets = {**image_datasets_query, **image_datasets_gallery}
 
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
-                                              shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'gallery_drone', 'query_satellite', 'query_drone']}
+                                              shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'query_drone']}
 use_gpu = torch.cuda.is_available()
 
 

@@ -35,7 +35,6 @@ class Model(nn.Module):
         self.load_state_dict(model2_dict)
 
 
-
 def make_model(opt):
     model = Model(opt)
     if os.path.exists(opt.load_from):

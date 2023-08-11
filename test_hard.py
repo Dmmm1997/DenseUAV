@@ -38,9 +38,6 @@ parser.add_argument('--mode', default='hard', type=str,
                     help='1:drone->satellite   2:satellite->drone')
 parser.add_argument('--num_worker', default=8, type=int,
                     help='1:drone->satellite   2:satellite->drone')
-# parser.add_argument('--LPN', default=True, type=bool, help='')
-# parser.add_argument('--block', default=2, type=int, help='')
-parser.add_argument('--box_vis', default=False, type=int, help='')
 
 parser.add_argument('--split_feature', default=1, type=int, help='')
 

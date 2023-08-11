@@ -10,7 +10,6 @@ batchsize=16
 sample_num=1
 triplet_loss=1
 block=1
-WSTR=0
 num_bottleneck=512
 backbone="ViTS-224"
 head="SingleBranch"
@@ -23,7 +22,7 @@ cj="no"  # color jitter
 rr="uav"  # random rotate
 
 python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_num $sample_num \
-                --triplet_loss $triplet_loss --block $block --WSTR $WSTR --lr $lr --num_worker $num_worker --head $head  \
+                --triplet_loss $triplet_loss --block $block --lr $lr --num_worker $num_worker --head $head  \
                 --num_bottleneck $num_bottleneck --backbone $backbone --h $h --w $w --batchsize $batchsize --load_from $load_from \
                 --ra $ra --re $re --cj $cj --rr $rr
 
@@ -47,7 +46,6 @@ batchsize=16
 sample_num=1
 triplet_loss=1
 block=1
-WSTR=0
 num_bottleneck=512
 backbone="ViTS-224"
 head="SingleBranch"
@@ -60,7 +58,7 @@ cj="no"  # color jitter
 rr="uav"  # random rotate
 
 python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_num $sample_num \
-                --triplet_loss $triplet_loss --block $block --WSTR $WSTR --lr $lr --num_worker $num_worker --head $head  \
+                --triplet_loss $triplet_loss --block $block --lr $lr --num_worker $num_worker --head $head  \
                 --num_bottleneck $num_bottleneck --backbone $backbone --h $h --w $w --batchsize $batchsize --load_from $load_from \
                 --ra $ra --re $re --cj $cj --rr $rr
 
@@ -84,7 +82,6 @@ batchsize=16
 sample_num=1
 triplet_loss=1
 block=1
-WSTR=0
 num_bottleneck=512
 backbone="ViTS-224"
 head="SingleBranch"
@@ -97,7 +94,7 @@ cj="no"  # color jitter
 rr="uav"  # random rotate
 
 python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_num $sample_num \
-                --triplet_loss $triplet_loss --block $block --WSTR $WSTR --lr $lr --num_worker $num_worker --head $head  \
+                --triplet_loss $triplet_loss --block $block --lr $lr --num_worker $num_worker --head $head  \
                 --num_bottleneck $num_bottleneck --backbone $backbone --h $h --w $w --batchsize $batchsize --load_from $load_from \
                 --ra $ra --re $re --cj $cj --rr $rr
 

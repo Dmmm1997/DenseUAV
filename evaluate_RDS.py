@@ -12,7 +12,7 @@ import torch
 import argparse
 import cv2
 # from datasets.SiamUAV import SiamUAV_test
-from tool.utils_server import load_network
+from tool.utils import load_network
 from torchvision import transforms
 import os
 import glob

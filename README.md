@@ -1,3 +1,109 @@
-# DenseUAV
+<h1 align="center"> Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments </h1>
 
-The dataset will be released soon.
+This repository contains code and dataset for the paper titled [Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments](https://arxiv.org/abs/2201.09201). In this paper, we propose a method for accurately self-positioning unmanned aerial vehicles (UAVs) in challenging low-altitude urban environments using vision-based techniques. We provide the DenseUAV dataset and a Baseline model implementation to facilitate research in this task. Thank you for your kindly attention.
+
+![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/data.jpg)
+
+![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/framework.jpg)
+
+![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/model.pdf)
+
+
+
+## Table of contents
+- [Table of contents](#table-of-contents)
+- [About Dataset](#about-dataset)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Dataset \& Preparation](#dataset--preparation)
+- [Train \& Evaluation](#train--evaluation)
+- [Supported Methods](#supported-methods)
+- [License](#license)
+- [Citation](#citation)
+- [Related Work](#related-work)
+
+## About Dataset
+The dataset split is as follows: 
+| Subset    | UAV-view  | Satellite-view    | Classes   | universities  |
+| --------  | -----     | ----              |  ----     | ----          |
+| Training  | 6,768     | 13,536            | 2,256     | 10            |
+| Query     | 2,331     | 4,662             | 777       | 4             |
+| Gallery   | 9099      | 18198             | 3033      | 14            |
+
+More detailed file structure:
+```
+├── DenseUAV/
+│   ├── Dense_GPS_ALL.txt
+│   ├── Dense_GPS_test.txt
+│   ├── Dense_GPS_train.txt
+│   ├── train/
+│       ├── drone/                   /* drone-view training images 
+│           ├── 000001
+│               ├── H100.JPG
+│               ├── H90.JPG
+│               ├── H80.JPG
+|           ...
+│       ├── satellite/               /* satellite-view training images       
+│   ├── test/
+│       ├── query_drone/             /* UAV-view testing images       
+│       ├── query_satellite/         /* satellite-view testing images       
+```
+
+
+## Prerequisites
+
+- Python 3.7+
+- GPU Memory >= 8G
+- Numpy 1.21.2
+- Pytorch 1.10.0+cu113
+- Torchvision 0.11.1+cu113
+
+## Installation
+It is best to use cuda version 11.3 and pytorch version 1.10.0. You can download the corresponding version from this [website](https://download.pytorch.org/whl/torch_stable.html) and install it through `pip install`. Then you can execute the following command to install all dependencies.
+```
+pip install -r requirments.txt
+```
+
+## Dataset & Preparation
+Download DenseUAV upon request. You may use the request [Template](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Request.md).
+
+## Train & Evaluation
+You could execute the following command to implement the entire process of training and testing.
+```
+bash train_test_local.sh 
+```
+
+The setting of parameters in **train_test_local.sh** can refer to [Get Started](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Get_started).
+
+## Supported Methods
+
+|  <u>Augment</u>   | <u>Backbone</u> | <u>Head</u> |  <u>Loss</u>                  |
+| --------          | --------        | ------      |  ------                       |
+| Random Rotate     |  ResNet         | MaxPool     | CrossEntropy Loss.            |
+| Random Affine     |  EfficientNet   | AvgPool     |   Focal Loss                  |
+| Random Brightness |  ConvNext       | MaxAvgPool  | Triplet Loss                  |
+| Random Erasing    |  DeiT           | GlobalPool  | Hard-Mining Triplet Loss      |
+|                   |  PvT            | GemPool     | Same-Domain Triplet Loss      |
+|                   |  SwinTransformer| LPN         | Soft-Weighted Triplet Loss    |
+|                   |  ViT            | FSRA        | KL Loss                       |
+
+
+## License
+This project is licensed under the [Apache 2.0 license](https://github.com/Dmmm1997/DenseUAV//blob/main/LICENSE).
+
+## Citation
+The following paper uses and reports the result of the baseline model. You may cite it in your paper.
+```bibtex
+@article{dai2022vision,
+  title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments},
+  author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
+  journal={arXiv preprint arXiv:2201.09201},
+  year={2022}
+}
+```
+
+
+
+## Related Work
+- University-1652 [https://github.com/layumi/University1652-Baseline](https://github.com/layumi/University1652-Baseline)
+- FSRA [https://github.com/Dmmm1997/FSRA](https://github.com/Dmmm1997/FSRA)

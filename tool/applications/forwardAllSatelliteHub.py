@@ -20,13 +20,6 @@ import warnings
 from datasets.Dataloader_University import DataLoader_Inference
 warnings.filterwarnings("ignore")
 from datasets.queryDataset import Dataset_query,Query_transforms
-
-#fp16
-try:
-    from apex.fp16_utils import *
-except ImportError: # will be 3.x series
-    print('This is not an error. If you want to use low precision, i.e., fp16, please install the apex with cuda support (https://github.com/NVIDIA/apex) and update pytorch to 1.0')
-######################################################################
 # Options
 # --------
 University="计量"
@@ -40,9 +33,6 @@ parser.add_argument('--h', default=256, type=int, help='height')
 parser.add_argument('--w', default=256, type=int, help='width')
 parser.add_argument('--ms',default='1', type=str,help='multiple_scale: e.g. 1 1,1.1  1,1.1,1.2')
 parser.add_argument('--num_worker',default=4, type=int,help='1:drone->satellite   2:satellite->drone')
-# parser.add_argument('--LPN', default=True, type=bool, help='')
-# parser.add_argument('--block', default=2, type=int, help='')
-parser.add_argument('--box_vis', default=False, type=int, help='')
 
 opt = parser.parse_args()
 ###load config###

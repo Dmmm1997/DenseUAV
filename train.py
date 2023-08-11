@@ -27,7 +27,7 @@ def get_parse():
     parser.add_argument('--gpu_ids', default='0', type=str,
                         help='gpu_ids: e.g. 0  0,1,2  0,2')
     parser.add_argument('--name', default='test',
-                        type=str, help='output model name')
+                        type=str, help='the experiment name that will be saved in checkpoints dir in the root')
     parser.add_argument('--data_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/train',
                         type=str, help='training dir path')
     parser.add_argument('--num_worker', default=0, type=int, help='')
@@ -40,30 +40,28 @@ def get_parse():
     parser.add_argument('--re', default="", type=str, help='random erasing')
     parser.add_argument('--cj', default="", type=str, help='color jitter')
     parser.add_argument('--erasing_p', default=0.3, type=float,
-                        help='Random Erasing probability, in [0,1]')
+                        help='random erasing probability, in [0,1]')
     parser.add_argument('--warm_epoch', default=0, type=int,
                         help='the first K epoch that needs warm up')
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
-    parser.add_argument('--droprate', default=0.5,
-                        type=float, help='drop rate')
     parser.add_argument('--DA', action='store_true',
                         help='use Color Data Augmentation')
-    parser.add_argument('--share', action='store_true',
-                        default=True, help='share weight between different view')
+    parser.add_argument('--droprate', default=0.5,
+                        type=float, help='drop rate')
     parser.add_argument('--autocast', action='store_true',
                         default=True, help='use mix precision')
     parser.add_argument('--block', default=2, type=int, help='')
-    parser.add_argument('--cls_loss', default="FocalLoss", type=str, help='')
-    parser.add_argument('--feature_loss', default="WeightedSoftTripletLoss", type=str, help='')
-    parser.add_argument('--kl_loss', default="", type=str, help='')
+    parser.add_argument('--cls_loss', default="FocalLoss", type=str, help='loss type of representation learning')
+    parser.add_argument('--feature_loss', default="WeightedSoftTripletLoss", type=str, help='loss type of metric learning')
+    parser.add_argument('--kl_loss', default="", type=str, help='loss type of mutual learning')
     parser.add_argument('--sample_num', default=1, type=int,
                         help='num of repeat sampling')
-    parser.add_argument('--num_epochs', default=120, type=int, help='')
-    parser.add_argument('--num_bottleneck', default=512, type=int, help='')
-    parser.add_argument('--load_from', default="", type=str, help='')
-    parser.add_argument('--backbone', default="ViTS-224", type=str, help='')
-    parser.add_argument('--head', default="SingleBranch", type=str, help='')
-    parser.add_argument('--head_pool', default="max", type=str, help='')
+    parser.add_argument('--num_epochs', default=120, type=int, help='total epoches for training')
+    parser.add_argument('--num_bottleneck', default=512, type=int, help='the dimensions for embedding the feature')
+    parser.add_argument('--load_from', default="", type=str, help='checkpoints path for pre-loading')
+    parser.add_argument('--backbone', default="ViTS-224", type=str, help='backbone network for applying')
+    parser.add_argument('--head', default="SingleBranch", type=str, help='head type for applying')
+    parser.add_argument('--head_pool', default="max", type=str, help='head pooling type for applying')
     
 
     opt = parser.parse_args()
