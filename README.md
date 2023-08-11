@@ -1,6 +1,6 @@
 <h1 align="center"> Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments </h1>
 
-This repository contains code and dataset for the paper titled [Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments](https://arxiv.org/abs/2201.09201). In this paper, we propose a method for accurately self-positioning unmanned aerial vehicles (UAVs) in challenging low-altitude urban environments using vision-based techniques. We provide the DenseUAV dataset and a Baseline model implementation to facilitate research in this task. Thank you for your kindly attention.
+This repository contains code and dataset for the paper titled [Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments](https://arxiv.org/abs/2201.09201). In this paper, we propose a method for accurately self-positioning unmanned aerial vehicles (UAVs) in challenging low-altitude urban environments using vision-based techniques. We provide the DenseUAV dataset and a Baseline model implementation to facilitate research in this task. Thank you for your kind attention.
 
 ![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/data.jpg)
 
@@ -76,6 +76,7 @@ You could execute the following command to implement the entire process of train
 ```
 bash train_test_local.sh 
 ```
+The setting of parameters in **train_test_local.sh** can refer to [Get Started](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Get_started).
 
 ### Evaluation
 The following commands are required to evaluate Recall and SDM separately.
@@ -85,7 +86,6 @@ python test.py --name <name> --test_dir <dir/to/testdir/of/dataset> --gpu_ids 0 
 ```
 the `<name>` is the dir name in your training setting, you can find in the `checkpoints/`.
 
-The setting of parameters in **train_test_local.sh** can refer to [Get Started](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Get_started).
 
 
 **For Recall**
