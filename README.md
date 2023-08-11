@@ -17,6 +17,8 @@ This repository contains code and dataset for the paper titled [Vision-Based UAV
 - [Installation](#installation)
 - [Dataset \& Preparation](#dataset--preparation)
 - [Train \& Evaluation](#train--evaluation)
+  - [Training and Testing](#training-and-testing)
+  - [Evaluation](#evaluation)
 - [Supported Methods](#supported-methods)
 - [License](#license)
 - [Citation](#citation)
@@ -68,12 +70,35 @@ pip install -r requirments.txt
 Download DenseUAV upon request. You may use the request [Template](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Request.md).
 
 ## Train & Evaluation
+
+### Training and Testing
 You could execute the following command to implement the entire process of training and testing.
 ```
 bash train_test_local.sh 
 ```
 
+### Evaluation
+The following commands are required to evaluate Recall and SDM separately.
+```
+cd checkpoints/<name>
+python test.py --name <name> --test_dir <dir/to/testdir/of/dataset> --gpu_ids 0 --num_worker 4
+```
+the `<name>` is the dir name in your training setting, you can find in the `checkpoints/`.
+
 The setting of parameters in **train_test_local.sh** can refer to [Get Started](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Get_started).
+
+
+**For Recall**
+```
+python evaluate_gpu.py
+```
+
+**For SDM**
+```
+python evaluateDistance.py --root_dir <dir/to/root/of/dataset>
+```
+
+
 
 ## Supported Methods
 
