@@ -129,7 +129,7 @@ The following paper uses and reports the result of the baseline model. You may c
 @article{dai2022vision,
   title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments},
   author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
-  journal={arXiv preprint arXiv:2201.09201},
+  journal={arXiv},
   year={2022}
 }
 ```
