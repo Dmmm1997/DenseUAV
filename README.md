@@ -10,6 +10,7 @@ This repository contains code and dataset for the paper titled [Vision-Based UAV
 
 ## News
 - **`2023/12/18`**: Our paper is accepted by IEEE Trans on Image Process.
+- **`2023/8/14`**: Our dataset and code are released.
 
 
 ## Table of contents
