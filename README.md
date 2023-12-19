@@ -112,7 +112,7 @@ python evaluateDistance.py --root_dir <dir/to/root/of/dataset>
 |  <u>Augment</u>   | <u>Backbone</u> | <u>Head</u> |  <u>Loss</u>                  |
 | --------          | --------        | ------      |  ------                       |
 | Random Rotate     |  ResNet         | MaxPool     | CrossEntropy Loss.            |
-| Random Affine     |  EfficientNet   | AvgPool     |   Focal Loss                  |
+| Random Affine     |  EfficientNet   | AvgPool     | Focal Loss                  |
 | Random Brightness |  ConvNext       | MaxAvgPool  | Triplet Loss                  |
 | Random Erasing    |  DeiT           | GlobalPool  | Hard-Mining Triplet Loss      |
 |                   |  PvT            | GemPool     | Same-Domain Triplet Loss      |
