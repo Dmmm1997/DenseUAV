@@ -8,6 +8,8 @@ This repository contains code and dataset for the paper titled [Vision-Based UAV
 
 ![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/model.png)
 
+## News
+- **`2023/12/18`**: Our paper is accepted by IEEE Trans on Image Process.
 
 
 ## Table of contents
