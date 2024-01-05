@@ -11,39 +11,6 @@ import json
 from tqdm import tqdm
 import math
 
-#######################################################################
-# Evaluate
-parser = argparse.ArgumentParser(description='Demo')
-# parser.add_argument('--query_index', default=10, type=int, help='test_image_index')
-parser.add_argument(
-    '--root_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/', type=str, help='./test_data')
-parser.add_argument('--K', default=[1, 3, 5, 10], type=str, help='./test_data')
-parser.add_argument('--M', default=5e3, type=str, help='./test_data')
-parser.add_argument('--mode', default="1", type=str,
-                    help='1:drone->satellite 2:satellite->drone')
-opts = parser.parse_args()
-
-opts.config = os.path.join(opts.root_dir, "Dense_GPS_ALL.txt")
-opts.test_dir = os.path.join(opts.root_dir, "test")
-configDict = {}
-with open(opts.config, "r") as F:
-    context = F.readlines()
-    for line in context:
-        splitLineList = line.split(" ")
-        configDict[splitLineList[0].split("/")[-2]] = [float(splitLineList[1].split("E")[-1]),
-                                                       float(splitLineList[2].split("N")[-1])]
-
-if opts.mode == "1":
-    gallery_name = 'gallery_satellite'
-    query_name = 'query_drone'
-else:
-    gallery_name = 'gallery_drone'
-    query_name = 'query_satellite'
-
-data_dir = opts.test_dir
-image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x)) for x in [
-    gallery_name, query_name]}
-
 
 #####################################################################
 # Show result
@@ -57,49 +24,6 @@ def imshow(path, title=None):
 
 
 ######################################################################
-if opts.mode == "1":
-    result = scipy.io.loadmat('pytorch_result_1.mat')
-else:
-    result = scipy.io.loadmat('pytorch_result_2.mat')
-query_feature = torch.FloatTensor(result['query_f'])
-query_label = result['query_label'][0]
-gallery_feature = torch.FloatTensor(result['gallery_f'])
-gallery_label = result['gallery_label'][0]
-
-multi = os.path.isfile('multi_query.mat')
-
-if multi:
-    m_result = scipy.io.loadmat('multi_query.mat')
-    mquery_feature = torch.FloatTensor(m_result['mquery_f'])
-    mquery_cam = m_result['mquery_cam'][0]
-    mquery_label = m_result['mquery_label'][0]
-    mquery_feature = mquery_feature.cuda()
-
-query_feature = query_feature.cuda()
-gallery_feature = gallery_feature.cuda()
-
-
-#######################################################################
-# sort the images and return topK index
-def sort_img(qf, ql, gf, gl, K):
-    query = qf.view(-1, 1)
-    # print(query.shape)
-    score = torch.mm(gf, query)
-    score = score.squeeze(1).cpu()
-    score = score.numpy()
-    # predict index
-    index = np.argsort(score)  # from small to large
-    index = index[::-1]
-    # index = index[0:2000]
-    # good index
-    query_index = np.argwhere(gl == ql)
-
-    # good_index = np.setdiff1d(query_index, camera_index, assume_unique=True)
-    junk_index = np.argwhere(gl == -1)
-
-    mask = np.in1d(index, junk_index, invert=True)
-    index = index[mask]
-    return index[:K]
 
 
 def getLatitudeAndLongitude(imgPath):
@@ -127,7 +51,7 @@ def evaluateSingle(distance, K):
     # weight = np.ones(K) - np.log(range(1, K + 1, 1)) / np.log(opts.M * K)
     weight = np.ones(K) - np.array(range(0, K, 1))/K
     # m1 = distance / maxDistance
-    m2 = 1 / np.exp(distance*opts.M)
+    m2 = 1 / np.exp(distance*5e3)
     m3 = m2 * weight
     result = np.sum(m3) / np.sum(weight)
     return result
@@ -175,37 +99,117 @@ def evaluate_MA(indexOfTop1, queryIndex):
     return distance_meter
 
 
+if '__main__' == __name__:
+    #######################################################################
+    # Evaluate
+    parser = argparse.ArgumentParser(description='Demo')
+    # parser.add_argument('--query_index', default=10, type=int, help='test_image_index')
+    parser.add_argument(
+        '--root_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/', type=str, help='./test_data')
+    parser.add_argument('--K', default=[1, 3, 5, 10], type=str, help='./test_data')
+    parser.add_argument('--M', default=5e3, type=str, help='./test_data')
+    parser.add_argument('--mode', default="1", type=str,
+                        help='1:drone->satellite 2:satellite->drone')
+    opts = parser.parse_args()
 
-indexOfTopK_list = []
-for i in range(len(query_label)):
-    indexOfTopK = sort_img(
-        query_feature[i], query_label[i], gallery_feature, gallery_label, 100)
-    indexOfTopK_list.append(indexOfTopK)
+    opts.config = os.path.join(opts.root_dir, "Dense_GPS_ALL.txt")
+    opts.test_dir = os.path.join(opts.root_dir, "test")
+    configDict = {}
+    with open(opts.config, "r") as F:
+        context = F.readlines()
+        for line in context:
+            splitLineList = line.split(" ")
+            configDict[splitLineList[0].split("/")[-2]] = [float(splitLineList[1].split("E")[-1]),
+                                                        float(splitLineList[2].split("N")[-1])]
 
-SDM_dict = {}
-for K in tqdm(range(1, 101, 1)):
-    metric = 0
+    if opts.mode == "1":
+        gallery_name = 'gallery_satellite'
+        query_name = 'query_drone'
+    else:
+        gallery_name = 'gallery_drone'
+        query_name = 'query_satellite'
+
+    data_dir = opts.test_dir
+    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x)) for x in [
+        gallery_name, query_name]}
+
+
+
+    if opts.mode == "1":
+        result = scipy.io.loadmat('pytorch_result_1.mat')
+    else:
+        result = scipy.io.loadmat('pytorch_result_2.mat')
+    query_feature = torch.FloatTensor(result['query_f'])
+    query_label = result['query_label'][0]
+    gallery_feature = torch.FloatTensor(result['gallery_f'])
+    gallery_label = result['gallery_label'][0]
+
+    multi = os.path.isfile('multi_query.mat')
+
+    if multi:
+        m_result = scipy.io.loadmat('multi_query.mat')
+        mquery_feature = torch.FloatTensor(m_result['mquery_f'])
+        mquery_cam = m_result['mquery_cam'][0]
+        mquery_label = m_result['mquery_label'][0]
+        mquery_feature = mquery_feature.cuda()
+
+    query_feature = query_feature.cuda()
+    gallery_feature = gallery_feature.cuda()
+
+
+    #######################################################################
+    # sort the images and return topK index
+    def sort_img(qf, ql, gf, gl, K):
+        query = qf.view(-1, 1)
+        # print(query.shape)
+        score = torch.mm(gf, query)
+        score = score.squeeze(1).cpu()
+        score = score.numpy()
+        # predict index
+        index = np.argsort(score)  # from small to large
+        index = index[::-1]
+        # index = index[0:2000]
+        # good index
+        query_index = np.argwhere(gl == ql)
+
+        # good_index = np.setdiff1d(query_index, camera_index, assume_unique=True)
+        junk_index = np.argwhere(gl == -1)
+
+        mask = np.in1d(index, junk_index, invert=True)
+        index = index[mask]
+        return index[:K]
+
+
+    indexOfTopK_list = []
     for i in range(len(query_label)):
-        P_ = evaluate_SDM(indexOfTopK_list[i], i, K)
-        metric += P_
-    metric = metric / len(query_label)
-    if K in opts.K:
-        print("metric{} = {:.2f}%".format(K, metric * 100))
-    SDM_dict[K] = metric
+        indexOfTopK = sort_img(
+            query_feature[i], query_label[i], gallery_feature, gallery_label, 100)
+        indexOfTopK_list.append(indexOfTopK)
 
-MA_dict = {}
-for meter in tqdm(range(1,101,1)):
-    MA_K = 0
-    for i in range(len(query_label)):
-        MA_meter = evaluate_MA(indexOfTopK_list[i][0],i)
-        if MA_meter<meter:
-            MA_K+=1
-    MA_K = MA_K/len(query_label)
-    MA_dict[meter]=MA_K
-        
+    SDM_dict = {}
+    for K in tqdm(range(1, 101, 1)):
+        metric = 0
+        for i in range(len(query_label)):
+            P_ = evaluate_SDM(indexOfTopK_list[i], i, K)
+            metric += P_
+        metric = metric / len(query_label)
+        if K in opts.K:
+            print("metric{} = {:.2f}%".format(K, metric * 100))
+        SDM_dict[K] = metric
 
-with open("SDM@K(1,100).json", 'w') as F:
-    json.dump(SDM_dict, F, indent=4)
+    MA_dict = {}
+    for meter in tqdm(range(1,101,1)):
+        MA_K = 0
+        for i in range(len(query_label)):
+            MA_meter = evaluate_MA(indexOfTopK_list[i][0],i)
+            if MA_meter<meter:
+                MA_K+=1
+        MA_K = MA_K/len(query_label)
+        MA_dict[meter]=MA_K
+            
 
-with open("MA@K(1,100)", 'w') as F:
-    json.dump(MA_dict, F, indent=4)
+    with open("SDM@K(1,100).json", 'w') as F:
+        json.dump(SDM_dict, F, indent=4)
+
+    with open("MA@K(1,100)", 'w') as F:
+        json.dump(MA_dict, F, indent=4)

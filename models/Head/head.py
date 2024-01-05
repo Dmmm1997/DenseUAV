@@ -1,7 +1,7 @@
 import torch.nn as nn
 from .SingleBranch import SingleBranch, SingleBranchCNN, SingleBranchSwin
-from .FSRA import FSRA
-from .LPN import LPN
+from .FSRA import FSRA, FSRA_CNN
+from .LPN import LPN, LPN_CNN
 from .GeM import GeM
 from .NetVLAD import NetVLAD
 
@@ -27,8 +27,12 @@ class Head(nn.Module):
             head_model = NetVLAD(opt)
         elif head == "FSRA":
             head_model = FSRA(opt)
+        elif head == "FSRA_CNN":
+            head_model = FSRA_CNN(opt)
         elif head == "LPN":
             head_model = LPN(opt)
+        elif head == "LPN_CNN":
+            head_model = LPN_CNN(opt)
         elif head == "GeM":
             head_model = GeM(opt)
         else:

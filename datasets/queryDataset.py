@@ -22,7 +22,7 @@ def test_collate_fn(batch):
     return torch.stack(image,dim=0), np.stack(infos,axis=0), path
 
 class Dataset_gallery(Dataset):
-    def __init__(self, filename, transformer):
+    def __init__(self, filename, transformer, filter_mode=None):
         super(Dataset_gallery, self).__init__()
         self.filename = filename
         self.transformer = transformer
@@ -31,6 +31,8 @@ class Dataset_gallery(Dataset):
             context = F.readlines()
             for line in context:
                 info = line.strip().split(" ")
+                if filter_mode is not None and filter_mode not in info[0]:
+                    continue
                 if info[0].endswith(".jpg"):
                     info_list.append(info)
         self.info_list = info_list

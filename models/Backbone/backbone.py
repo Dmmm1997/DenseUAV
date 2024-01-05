@@ -1,6 +1,8 @@
 import torch.nn as nn
 import timm
-
+from .RKNet import RKNet
+from .cvt import get_cvt_models
+import torch
 
 def make_backbone(opt):
     backbone_model = Backbone(opt)
@@ -18,6 +20,12 @@ class Backbone(nn.Module):
     def init_backbone(self, backbone):
         if backbone=="resnet50":
             backbone_model = timm.create_model('resnet50', pretrained=True)
+            output_channel = 2048
+        elif backbone=="RKNet":
+            backbone_model = RKNet()
+            output_channel = 2048
+        elif backbone=="senet":
+            backbone_model = timm.create_model('legacy_seresnet50', pretrained=True)
             output_channel = 2048
         elif backbone=="ViTS-224":
             backbone_model = timm.create_model("vit_small_patch16_224", pretrained=True, img_size=self.img_size)
@@ -64,9 +72,23 @@ class Backbone(nn.Module):
         elif backbone=="vgg16":
             backbone_model = timm.create_model("vgg16", pretrained=True)
             output_channel = 512
+        elif backbone=="cvt13":
+            backbone_model, channels = get_cvt_models(model_size="cvt13")
+            output_channel = channels[-1]
+            checkpoint_weight = "/home/dmmm/VscodeProject/FPI/pretrain_model/CvT-13-384x384-IN-22k.pth"
+            backbone_model = self.load_checkpoints(checkpoint_weight, backbone_model)
         else:
             raise NameError("{} not in the backbone list!!!".format(backbone))
         return backbone_model,output_channel
+    
+    def load_checkpoints(self, checkpoint_path, model):
+        ckpt = torch.load(checkpoint_path, map_location='cpu')
+        filter_ckpt = {k: v for k, v in ckpt.items() if "pos_embed" not in k}
+        missing_keys, unexpected_keys = model.load_state_dict(filter_ckpt, strict=False)
+        print("Load pretrained backbone checkpoint from:", checkpoint_path)
+        print("missing keys:", missing_keys)
+        print("unexpected keys:", unexpected_keys)
+        return model
 
     def forward(self, image):
         features = self.backbone.forward_features(image)

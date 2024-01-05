@@ -15,7 +15,7 @@ parser.add_argument('--checkpoint', default='../net_119.pth',
                     type=str, help='save model path')
 parser.add_argument('--test_h', default=224, type=int, help='height')
 parser.add_argument('--test_w', default=224, type=int, help='width')
-parser.add_argument('--calc_nums', default=100, type=int, help='width')
+parser.add_argument('--calc_nums', default=2000, type=int, help='width')
 opt = parser.parse_args()
 
 config_path = '../opts.yaml'

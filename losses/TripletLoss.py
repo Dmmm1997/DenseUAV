@@ -224,7 +224,7 @@ class TripletLoss(object):
         return loss
 
 
-class Tripletloss(nn.Module):
+class SameDomainTripletLoss(nn.Module):
     """Triplet loss with hard positive/negative mining.
 
     Reference:
@@ -236,7 +236,7 @@ class Tripletloss(nn.Module):
         margin (float): margin for triplet.
     """
     def __init__(self, margin=0.3):
-        super(Tripletloss, self).__init__()
+        super(SameDomainTripletLoss, self).__init__()
         self.margin = margin
         self.ranking_loss = nn.MarginRankingLoss(margin=margin)  # pytorch的Triplet loss 需要输入ap an margin 和 倍率y，
                                                                  # 最后算Relu(ap - y*an + margin)  ap是正样本间距，an是负样本间距

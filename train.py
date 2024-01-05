@@ -15,7 +15,6 @@ from models.taskflow import make_model
 from datasets.make_dataloader import make_dataset
 from tool.utils import save_network, copyfiles2checkpoints, get_preds, get_logger, calc_flops_params, set_seed
 import warnings
-from losses.cal_loss import cal_loss
 from losses.loss import Loss
 
 
@@ -33,8 +32,8 @@ def get_parse():
     parser.add_argument('--num_worker', default=0, type=int, help='')
     parser.add_argument('--batchsize', default=2, type=int, help='batchsize')
     parser.add_argument('--pad', default=0, type=int, help='padding')
-    parser.add_argument('--h', default=256, type=int, help='height')
-    parser.add_argument('--w', default=256, type=int, help='width')
+    parser.add_argument('--h', default=224, type=int, help='height')
+    parser.add_argument('--w', default=224, type=int, help='width')
     parser.add_argument('--rr', default="", type=str, help='random rotate')
     parser.add_argument('--ra', default="", type=str, help='random affine')
     parser.add_argument('--re', default="", type=str, help='random erasing')
@@ -51,16 +50,16 @@ def get_parse():
     parser.add_argument('--autocast', action='store_true',
                         default=True, help='use mix precision')
     parser.add_argument('--block', default=2, type=int, help='')
-    parser.add_argument('--cls_loss', default="FocalLoss", type=str, help='loss type of representation learning')
-    parser.add_argument('--feature_loss', default="WeightedSoftTripletLoss", type=str, help='loss type of metric learning')
-    parser.add_argument('--kl_loss', default="", type=str, help='loss type of mutual learning')
+    parser.add_argument('--cls_loss', default="CELoss", type=str, help='loss type of representation learning')
+    parser.add_argument('--feature_loss', default="no", type=str, help='loss type of metric learning')
+    parser.add_argument('--kl_loss', default="no", type=str, help='loss type of mutual learning')
     parser.add_argument('--sample_num', default=1, type=int,
                         help='num of repeat sampling')
     parser.add_argument('--num_epochs', default=120, type=int, help='total epoches for training')
     parser.add_argument('--num_bottleneck', default=512, type=int, help='the dimensions for embedding the feature')
     parser.add_argument('--load_from', default="", type=str, help='checkpoints path for pre-loading')
-    parser.add_argument('--backbone', default="ViTS-224", type=str, help='backbone network for applying')
-    parser.add_argument('--head', default="SingleBranch", type=str, help='head type for applying')
+    parser.add_argument('--backbone', default="cvt13", type=str, help='backbone network for applying')
+    parser.add_argument('--head', default="FSRA_CNN", type=str, help='head type for applying')
     parser.add_argument('--head_pool', default="max", type=str, help='head pooling type for applying')
     
 
@@ -68,7 +67,7 @@ def get_parse():
     print(opt)
     return opt
 
-
+∏
 def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
     logger = get_logger(
         "checkpoints/{}/train.log".format(opt.name))

@@ -1,7 +1,8 @@
 import torch
 from torch import nn
-from .TripletLoss import Tripletloss, WeightedSoftTripletLoss, HardMiningTripletLoss, TripletLoss
+from .TripletLoss import SameDomainTripletLoss, WeightedSoftTripletLoss, HardMiningTripletLoss, TripletLoss
 from .FocalLoss import FocalLoss
+from pytorch_metric_learning import losses, miners  # pip install pytorch-metric-learning
 import torch.nn.functional as F
 from torch.autograd import Variable
 
@@ -22,10 +23,12 @@ class Loss(nn.Module):
             self.feature_loss = TripletLoss(margin=0.3, normalize_feature=True)
         elif opt.feature_loss == "HardMiningTripletLoss":
             self.feature_loss = HardMiningTripletLoss(margin=0.3, normalize_feature=True)
-        elif opt.feature_loss == "Tripletloss":
-            self.feature_loss = Tripletloss(margin=0.3)
+        elif opt.feature_loss == "SameDomainTripletLoss":
+            self.feature_loss = SameDomainTripletLoss(margin=0.3)
         elif opt.feature_loss == "WeightedSoftTripletLoss":
             self.feature_loss = WeightedSoftTripletLoss()
+        elif opt.feature_loss == "ContrastiveLoss":
+            self.feature_loss = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
         else:
             self.feature_loss = None
 
@@ -48,7 +51,7 @@ class Loss(nn.Module):
                 self.calc_cls_loss(cls2, labels2, self.cls_loss)
             loss += res_cls_loss
 
-        # 三元组损失
+        # 特征对比损失
         res_triplet_loss = torch.tensor((0))
         if self.feature_loss is not None:
             split_num = self.opt.batchsize//self.opt.sample_num
@@ -56,7 +59,7 @@ class Loss(nn.Module):
                 feature1, feature2, labels, self.feature_loss, split_num)
             loss += res_triplet_loss
 
-        # 增加klLoss来做mutual learning
+        # 相互学习
         res_kl_loss = torch.tensor((0))
         if self.kl_loss is not None:
             res_kl_loss = self.calc_kl_loss(cls1, cls2, self.kl_loss)

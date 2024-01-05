@@ -5,6 +5,12 @@ test_dir="/home/dmmm/Dataset/DenseUAV/data_2022/test" #"/media/dmmm/4T-3/DataSet
 num_worker=8
 gpu_ids=0
 
+name="checkpoints/Backbone_Experiment_SENet"
+cd $name
+cd tool
+python get_inference_time.py --name $name
+cd ../../../
+
 # name="checkpoints/Backbone_Experiment_ConvnextT"
 # cd $name
 # cd tool
@@ -17,11 +23,11 @@ gpu_ids=0
 # python get_inference_time.py --name $name
 # cd ../../../
 
-name="checkpoints/Backbone_Experiment_EfficientNet-B2"
-cd $name
-cd tool
-python get_inference_time.py --name $name
-cd ../../../
+# name="checkpoints/Backbone_Experiment_EfficientNet-B2"
+# cd $name
+# cd tool
+# python get_inference_time.py --name $name
+# cd ../../../
 
 # name="checkpoints/Backbone_Experiment_EfficientNet-B3"
 # cd $name

@@ -90,7 +90,12 @@ for i in range(len(query_label)):
 CMC = CMC.float()
 CMC = CMC/len(query_label) #average CMC
 print(round(len(gallery_label)*0.01))
-print('Recall@1:%.2f Recall@5:%.2f Recall@10:%.2f Recall@top1:%.2f AP:%.2f'%(CMC[0]*100,CMC[4]*100,CMC[9]*100, CMC[round(len(gallery_label)*0.01)]*100, ap/len(query_label)*100))
+info = 'Recall@1:%.2f Recall@5:%.2f Recall@10:%.2f Recall@top1:%.2f AP:%.2f'%(CMC[0]*100,CMC[4]*100,CMC[9]*100, CMC[round(len(gallery_label)*0.01)]*100, ap/len(query_label)*100)
+print(info)
+
+with open("results.txt", "w") as F:
+    F.write(info)
+
 
 # multiple-query
 CMC = torch.IntTensor(len(gallery_label)).zero_()
