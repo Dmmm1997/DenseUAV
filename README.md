@@ -8,6 +8,9 @@ This repository contains code and dataset for the paper titled [Vision-Based UAV
 
 ![](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/images/model.png)
 
+## News
+- **`2023/12/18`**: Our paper is accepted by IEEE Trans on Image Process.
+- **`2023/8/14`**: Our dataset and code are released.
 
 
 ## Table of contents
@@ -112,7 +115,7 @@ python evaluateDistance.py --root_dir <dir/to/root/of/dataset>
 |  <u>Augment</u>   | <u>Backbone</u> | <u>Head</u> |  <u>Loss</u>                  |
 | --------          | --------        | ------      |  ------                       |
 | Random Rotate     |  ResNet         | MaxPool     | CrossEntropy Loss.            |
-| Random Affine     |  EfficientNet   | AvgPool     |   Focal Loss                  |
+| Random Affine     |  EfficientNet   | AvgPool     | Focal Loss                  |
 | Random Brightness |  ConvNext       | MaxAvgPool  | Triplet Loss                  |
 | Random Erasing    |  DeiT           | GlobalPool  | Hard-Mining Triplet Loss      |
 |                   |  PvT            | GemPool     | Same-Domain Triplet Loss      |
@@ -129,9 +132,18 @@ The following paper uses and reports the result of the baseline model. You may c
 @article{dai2022vision,
   title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments},
   author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
-  journal={arXiv preprint arXiv:2201.09201},
+  journal={arXiv},
   year={2022}
 }
+@ARTICLE{DenseUAV,
+  author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
+  journal={IEEE Transactions on Image Processing}, 
+  title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={1-1},
+  doi={10.1109/TIP.2023.3346279}}
 ```
 
 
