@@ -67,7 +67,6 @@ def get_parse():
     print(opt)
     return opt
 
-∏
 def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
     logger = get_logger(
         "checkpoints/{}/train.log".format(opt.name))
