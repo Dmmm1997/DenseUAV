@@ -23,10 +23,10 @@ re="satellite"  # random erasing
 cj="no"  # color jitter
 rr="uav"  # random rotate
 
-# python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_num $sample_num \
-#                 --block $block --lr $lr --num_worker $num_worker --head $head  --head_pool $head_pool \
-#                 --num_bottleneck $num_bottleneck --backbone $backbone --h $h --w $w --batchsize $batchsize --load_from $load_from \
-#                 --ra $ra --re $re --cj $cj --rr $rr --cls_loss $cls_loss --feature_loss $feature_loss --kl_loss $kl_loss
+python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_num $sample_num \
+                --block $block --lr $lr --num_worker $num_worker --head $head  --head_pool $head_pool \
+                --num_bottleneck $num_bottleneck --backbone $backbone --h $h --w $w --batchsize $batchsize --load_from $load_from \
+                --ra $ra --re $re --cj $cj --rr $rr --cls_loss $cls_loss --feature_loss $feature_loss --kl_loss $kl_loss
 
 
 cd checkpoints/$name
