@@ -144,12 +144,12 @@ The following paper uses and reports the result of the baseline model. You may c
 ```bibtex
 @ARTICLE{DenseUAV,
   author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
-  journal={IEEE Transactions on Image Processing},
-  title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments},
-  year={2023},
-  volume={},
+  journal={IEEE Transactions on Image Processing}, 
+  title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments}, 
+  year={2024},
+  volume={33},
   number={},
-  pages={1-1},
+  pages={493-508},
   doi={10.1109/TIP.2023.3346279}}
 ```
 
