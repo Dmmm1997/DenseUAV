@@ -31,5 +31,5 @@ python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_nu
 cd checkpoints/$name
 python test.py --name $name --test_dir $test_dir --gpu_ids $gpu_ids --num_worker $num_worker
 python evaluate_gpu.py
-python evaluateDistance.py
+python evaluateDistance.py --root_dir $root_dir
 cd ../../

@@ -127,6 +127,16 @@ python evaluate_gpu.py
 python evaluateDistance.py --root_dir <dir/to/root/of/dataset>
 ```
 
+We also provide the baseline checkpoints, [ckpt](https://pan.quark.cn/s/3ced42633793).
+
+```
+unzip <file.zip> -d checkpoints
+cd checkpoints/baseline
+python test.py --test_dir <dataset_root>/test
+python evaluate_gpu.py
+python evaluateDistance.py --root_dir <dataset_root>
+```
+
 ## Supported Methods
 
 | <u>Augment</u>    | <u>Backbone</u> | <u>Head</u> | <u>Loss</u>                |

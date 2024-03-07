@@ -44,7 +44,7 @@ print(opt.name)
 # load the training config
 config_path = 'opts.yaml'
 with open(config_path, 'r') as stream:
-    config = yaml.load(stream)
+    config = yaml.load(stream, Loader=yaml.FullLoader)
 for cfg, value in config.items():
     setattr(opt, cfg, value)
 
