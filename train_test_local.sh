@@ -1,5 +1,5 @@
 name="baseline"
-root_dir="/home/dmmm/Dataset/DenseUAV/data_2022"
+root_dir="/data/datasets/crossview/DenseUAV/data_2022"
 data_dir=$root_dir/train
 test_dir=$root_dir/test
 gpu_ids=0
@@ -27,7 +27,6 @@ python train.py --name $name --data_dir $data_dir --gpu_ids $gpu_ids --sample_nu
                 --block $block --lr $lr --num_worker $num_worker --head $head  --head_pool $head_pool \
                 --num_bottleneck $num_bottleneck --backbone $backbone --h $h --w $w --batchsize $batchsize --load_from $load_from \
                 --ra $ra --re $re --cj $cj --rr $rr --cls_loss $cls_loss --feature_loss $feature_loss --kl_loss $kl_loss
-
 
 cd checkpoints/$name
 python test.py --name $name --test_dir $test_dir --gpu_ids $gpu_ids --num_worker $num_worker

@@ -1,7 +1,10 @@
 scipy
 tqdm
-yaml
+pyyaml
 matplotlib
 opencv-python
 timm
 pillow
+einops
+thop
+pytorch_metric_learning

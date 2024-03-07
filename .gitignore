@@ -130,7 +130,7 @@ dmypy.json
 
 *.pth
 maps/
-checkpoints/
+checkpoints/*
 visualization/
 .history/
 .vscode/

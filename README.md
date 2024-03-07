@@ -82,6 +82,12 @@ It is best to use cuda version 11.3 and pytorch version 1.10.0. You can download
 pip install -r requirments.txt
 ```
 
+Create the directory for saving the training log and ckpts.
+
+```
+mkdir checkpoints
+```
+
 ## Dataset & Preparation
 
 Download DenseUAV upon request. You may use the request [Template](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Request.md).
@@ -144,8 +150,8 @@ The following paper uses and reports the result of the baseline model. You may c
 ```bibtex
 @ARTICLE{DenseUAV,
   author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
-  journal={IEEE Transactions on Image Processing}, 
-  title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments}, 
+  journal={IEEE Transactions on Image Processing},
+  title={Vision-Based UAV Self-Positioning in Low-Altitude Urban Environments},
   year={2024},
   volume={33},
   number={},
