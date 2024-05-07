@@ -127,7 +127,7 @@ python evaluate_gpu.py
 python evaluateDistance.py --root_dir <dir/to/root/of/dataset>
 ```
 
-We also provide the baseline checkpoints, [ckpt](https://pan.quark.cn/s/3ced42633793).
+We also provide the baseline checkpoints, [quark](https://pan.quark.cn/s/3ced42633793) [one-drive](https://seunic-my.sharepoint.cn/:u:/g/personal/230238525_seu_edu_cn/EUFoYjIdK_JNuxmvpb5QjLcB1hUHyedGwOnT3wTeN7Zqdg?e=LZuUxz).
 
 ```
 unzip <file.zip> -d checkpoints
