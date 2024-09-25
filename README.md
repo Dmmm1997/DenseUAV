@@ -102,7 +102,7 @@ You could execute the following command to implement the entire process of train
 bash train_test_local.sh
 ```
 
-The setting of parameters in **train_test_local.sh** can refer to [Get Started](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Get_started).
+The setting of parameters in **train_test_local.sh** can refer to [Get Started](https://github.com/Dmmm1997/DenseUAV/blob/main/docs/training_parameters.md).
 
 ### Evaluation
 
