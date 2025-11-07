@@ -10,6 +10,8 @@ This repository contains code and dataset for the paper titled [Vision-Based UAV
 
 ## News
 
+- **`2025/9/22`**: Released a new **memory-efficient paradigm**, [SWA-PF](https://github.com/YuanJiayuuu/SWA-PF).
+- **`2024/8/28`**: Code and model released for a novel UAV self-localization paradigm named [DRL](https://github.com/Dmmm1997/DRL).
 - **`2023/12/18`**: Our paper is accepted by IEEE Trans on Image Process.
 - **`2023/8/14`**: Our dataset and code are released.
 
