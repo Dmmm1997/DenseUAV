@@ -92,7 +92,7 @@ mkdir checkpoints
 
 ## Dataset & Preparation
 
-Download DenseUAV upon request. You may use the request [Template](https://github.com/Dmmm1997/DenseUAV//blob/main/docs/Request.md).
+Download DenseUAV [HF_DATA]{https://huggingface.co/datasets/Dmmm997/DenseUAV}.
 
 ## Train & Evaluation
 
