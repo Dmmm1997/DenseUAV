@@ -157,8 +157,6 @@ This project is licensed under the [Apache 2.0 license](https://github.com/Dmmm1
 
 ## Citation
 
-The following paper uses and reports the result of the baseline model. You may cite it in your paper.
-
 ```bibtex
 @ARTICLE{DenseUAV,
   author={Dai, Ming and Zheng, Enhui and Feng, Zhenhua and Qi, Lei and Zhuang, Jiedong and Yang, Wankou},
